@@ -1,0 +1,324 @@
+.mellow-downloads-panel {
+    margin: 1.4rem 0;
+    overflow: hidden;
+    border: 1px solid #d9e4ec;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(37, 71, 91, 0.07);
+}
+
+.mellow-downloads-panel__header {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 1.3rem;
+    background: linear-gradient(135deg, #f5faff, #eef6ff);
+}
+
+.mellow-downloads-panel__eyebrow {
+    margin: 0 0 0.15rem !important;
+    color: #4b91d8;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.mellow-downloads-panel h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.mellow-downloads-panel__header p:last-child {
+    margin: 0.35rem 0 0;
+    color: #738493;
+}
+
+.mellow-download-toggle {
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 0.55rem;
+    align-items: center;
+    cursor: pointer;
+}
+
+.mellow-download-toggle input[type="checkbox"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.mellow-download-toggle span {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    border-radius: 999px;
+    background: #b8c6d1;
+    transition: background 0.2s ease;
+}
+
+.mellow-download-toggle span::after {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.16);
+    content: "";
+    transition: transform 0.2s ease;
+}
+
+.mellow-download-toggle input:checked + span {
+    background: #53a3f2;
+}
+
+.mellow-download-toggle input:checked + span::after {
+    transform: translateX(18px);
+}
+
+.mellow-download-toggle input:focus-visible + span {
+    outline: 3px solid rgba(83, 163, 242, 0.3);
+    outline-offset: 2px;
+}
+
+.mellow-downloads-panel__body {
+    padding: 1.1rem 1.3rem 1.25rem;
+}
+
+.mellow-downloads-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.mellow-download-row {
+    display: grid;
+    grid-template-columns: 32px minmax(145px, 0.55fr) minmax(220px, 1.45fr) auto;
+    gap: 0.75rem;
+    align-items: end;
+    padding: 0.8rem;
+    border: 1px solid #dce6ed;
+    border-radius: 9px;
+    background: #fbfdff;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+.mellow-download-row.is-dragging {
+    opacity: 0.5;
+}
+
+.mellow-download-row.is-drag-over {
+    border-color: #53a3f2;
+    box-shadow: 0 0 0 3px rgba(83, 163, 242, 0.14);
+}
+
+.mellow-download-row__handle {
+    height: 32px;
+    padding: 0;
+    border: 0;
+    color: #8798a5;
+    background: transparent;
+    font-size: 19px;
+    cursor: grab;
+}
+
+.mellow-download-row__handle:active {
+    cursor: grabbing;
+}
+
+.mellow-download-field {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    color: #536573;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.mellow-download-field select,
+.mellow-download-field input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 34px;
+    margin: 0;
+    border-color: #cbd8e1;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.mellow-download-row__actions {
+    display: flex;
+    gap: 0.35rem;
+    height: 34px;
+    align-items: center;
+}
+
+.mellow-download-row__actions .btn {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 7px;
+}
+
+.mellow-download-row__remove {
+    color: #b84e4e;
+}
+
+.mellow-downloads-add {
+    margin-top: 0.85rem;
+    border-color: #a8cceb;
+    color: #337fbe;
+    background: #f1f8ff;
+}
+
+.mellow-downloads-panel .description {
+    margin: 0.75rem 0 0;
+}
+
+#wmd-button-bar .wmd-edittab {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+#wmd-button-bar .wmd-edittab a.mellow-enhance-mode-tab {
+    position: relative;
+    margin-left: 0;
+    padding-inline: 9px;
+    border-radius: 5px;
+    color: #467b96;
+    background: #edf6fd;
+    font-weight: 600;
+}
+
+#wmd-button-bar .wmd-edittab a.mellow-enhance-mode-tab:hover,
+#wmd-button-bar .wmd-edittab a.mellow-enhance-mode-tab:focus-visible {
+    color: #28668a;
+    background: #dceefa;
+}
+
+#wmd-button-bar .wmd-edittab a.mellow-enhance-mode-tab.active {
+    color: #fff;
+    background: #467b96;
+}
+
+#wmd-button-bar .wmd-edittab a.mellow-enhance-mode-tab:last-of-type {
+    margin-right: 6px;
+}
+
+/* Typecho's writing page uses flex columns. Without an explicit zero minimum,
+ * Vditor's toolbar or a wide Markdown node becomes the main column's intrinsic
+ * width and pushes the settings column outside the viewport. */
+.typecho-post-area > [role="main"],
+.typecho-post-area > #edit-secondary {
+    min-width: 0;
+}
+
+.typecho-post-area > [role="main"] > :is(#wmd-button-bar, #wmd-editarea, #wmd-preview, .mellow-enhance-editor-shell) {
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+#wmd-button-bar {
+    min-width: 0;
+}
+
+#wmd-button-bar .wmd-button-row {
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.mellow-enhance-editor-shell {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 1em 0;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.mellow-enhance-editor-shell[hidden] {
+    display: none !important;
+}
+
+.mellow-enhance-editor-mount,
+.mellow-enhance-editor-shell .vditor {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.mellow-enhance-editor-shell .vditor {
+    overflow: hidden;
+    border-color: #d9e2e8;
+    border-radius: 8px;
+}
+
+.mellow-enhance-editor-shell :is(.vditor-content, .vditor-wysiwyg, .vditor-ir, .vditor-sv, .vditor-reset) {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.mellow-enhance-editor-shell .vditor-content {
+    overflow: hidden;
+}
+
+.mellow-enhance-editor-shell .vditor-toolbar {
+    border-color: #e3e9ed;
+    background: #f8fafb;
+}
+
+.mellow-enhance-editor-shell .vditor-toolbar__item button {
+    min-height: 28px;
+}
+
+.mellow-enhance-editor-shell.is-initializing::before {
+    display: block;
+    padding: 1rem;
+    color: #738493;
+    content: "正在加载 Vditor…";
+}
+
+.mellow-enhance-editor-error {
+    margin: 1em 0;
+    padding: 0.8rem 1rem;
+    border-left: 4px solid #d26b6b;
+    border-radius: 4px;
+    color: #8b3838;
+    background: #fff1f1;
+}
+
+.preview .mellow-enhance-editor-shell {
+    display: none !important;
+}
+
+@media (max-width: 760px) {
+    .mellow-downloads-panel__header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .mellow-download-row {
+        grid-template-columns: 26px minmax(0, 1fr) auto;
+    }
+
+    .mellow-download-field--url {
+        grid-column: 2 / -1;
+    }
+
+    .mellow-download-row__actions {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    #wmd-button-bar .wmd-edittab {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}

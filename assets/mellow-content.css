@@ -1,0 +1,695 @@
+/*
+ * Mellow article-content visual bridge for Vditor 3.11.2.
+ * It is intentionally scoped to editor instances that opt in through plugin settings.
+ */
+.mellow-enhance-editor--front {
+    --mellow-editor-primary: #0aa879;
+    --mellow-editor-primary-strong: color-mix(in oklch, var(--mellow-editor-primary) 82%, #000);
+    --mellow-editor-primary-soft: color-mix(in srgb, var(--mellow-editor-primary) 12%, #fff);
+    --mellow-editor-primary-faint: color-mix(in srgb, var(--mellow-editor-primary) 4%, #fff);
+    --mellow-editor-text: rgba(0, 0, 0, 0.75);
+    --mellow-editor-text-strong: rgba(0, 0, 0, 0.9);
+    --mellow-editor-text-muted: rgba(0, 0, 0, 0.5);
+    --mellow-editor-border: rgba(0, 0, 0, 0.08);
+    --mellow-editor-surface: #fff;
+    --mellow-editor-code-bg: #1e1e1e;
+    --mellow-editor-code-text: #d4d4d4;
+    --mellow-editor-link-underline: color-mix(in oklch, var(--mellow-editor-primary) 24%, #fff);
+    --mellow-editor-link-hover: color-mix(in oklch, var(--mellow-editor-primary) 14%, #fff);
+    --mellow-editor-link-active: color-mix(in oklch, var(--mellow-editor-primary) 24%, #fff);
+    --mellow-editor-radius-small: 8px;
+    --mellow-editor-radius-medium: 12px;
+}
+
+.mellow-enhance-editor--front.is-dark {
+    --mellow-editor-primary-strong: color-mix(in oklch, var(--mellow-editor-primary) 82%, #fff);
+    --mellow-editor-primary-soft: color-mix(in srgb, var(--mellow-editor-primary) 20%, #252a2b);
+    --mellow-editor-primary-faint: color-mix(in srgb, var(--mellow-editor-primary) 8%, #252a2b);
+    --mellow-editor-text: rgba(255, 255, 255, 0.76);
+    --mellow-editor-text-strong: rgba(255, 255, 255, 0.92);
+    --mellow-editor-text-muted: rgba(255, 255, 255, 0.55);
+    --mellow-editor-border: rgba(255, 255, 255, 0.1);
+    --mellow-editor-surface: #252a2b;
+    --mellow-editor-link-underline: color-mix(in oklch, var(--mellow-editor-primary) 46%, #252a2b);
+    --mellow-editor-link-hover: color-mix(in oklch, var(--mellow-editor-primary) 42%, #252a2b);
+    --mellow-editor-link-active: color-mix(in oklch, var(--mellow-editor-primary) 54%, #252a2b);
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) {
+    color: var(--mellow-editor-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.82;
+    overflow-wrap: anywhere;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) p {
+    margin: 1.15em 0;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(h1, h2, h3, h4, h5, h6) {
+    color: var(--mellow-editor-text-strong);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) h1 {
+    margin: 1.8em 0 0.75em;
+    font-size: 2rem;
+    line-height: 1.25;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) h2 {
+    margin: 2em 0 0.75em;
+    font-size: 1.65rem;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) h3 {
+    margin: 1.8em 0 0.7em;
+    font-size: 1.35rem;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) h4 {
+    margin: 1.65em 0 0.65em;
+    font-size: 1.12rem;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(h5, h6) {
+    margin: 1.5em 0 0.6em;
+    font-size: 1rem;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(strong, b) {
+    color: var(--mellow-editor-text-strong);
+    font-weight: 700;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(ul, ol) {
+    margin: 1.1em 0;
+    padding-left: 1.65em;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) li {
+    margin: 0.35em 0;
+    padding-left: 0.15em;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) li > :is(ul, ol) {
+    margin-block: 0.35em;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) li::marker {
+    color: var(--mellow-editor-primary);
+    font-weight: 600;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) img {
+    display: block;
+    max-width: 100%;
+    margin: 1.5rem auto;
+    border-radius: var(--mellow-editor-radius-medium);
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) figure {
+    margin: 1.65rem 0;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) figure img {
+    margin-block: 0;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) figcaption {
+    margin-top: 0.65rem;
+    color: var(--mellow-editor-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.55;
+    text-align: center;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(video, iframe) {
+    display: block;
+    max-width: 100%;
+    margin: 1.5rem auto;
+    border: 0;
+    border-radius: var(--mellow-editor-radius-medium);
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) video {
+    width: 100%;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) details {
+    margin: 1.35rem 0;
+    padding: 0.25rem 1rem 0.8rem;
+    border-radius: var(--mellow-editor-radius-medium);
+    background: var(--mellow-editor-primary-faint);
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) summary {
+    margin: -0.25rem -1rem -0.8rem;
+    padding: 0.8rem 1rem;
+    border-radius: inherit;
+    color: var(--mellow-editor-text-strong);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) details[open] summary {
+    margin-bottom: 0.6rem;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) del {
+    color: var(--mellow-editor-text-muted);
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(a, [data-type="a"]) {
+    margin-inline: 0;
+    padding: 0.08em 0.28em;
+    border-bottom: 1px dashed var(--mellow-editor-link-underline);
+    border-radius: var(--mellow-editor-radius-small);
+    color: var(--mellow-editor-primary-strong) !important;
+    background: linear-gradient(var(--mellow-editor-link-hover), var(--mellow-editor-link-hover)) center / 0 0 no-repeat;
+    font-weight: 700;
+    text-decoration: none !important;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    transition: background-size 240ms cubic-bezier(0.22, 1, 0.36, 1), border-color 120ms ease, color 160ms ease;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) [data-type="a"] :is(a, .vditor-ir__link),
+.mellow-enhance-editor--front .vditor-ir__link {
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(a, [data-type="a"]):is(:hover, :focus-visible) {
+    border-bottom-color: transparent;
+    color: var(--mellow-editor-primary-strong) !important;
+    background-size: 100% 100%;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(a, [data-type="a"]):active {
+    background-image: linear-gradient(var(--mellow-editor-link-active), var(--mellow-editor-link-active));
+    background-size: 100% 100%;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(a, [data-type="a"]):has(img) {
+    margin-inline: 0;
+    padding: 0;
+    border-bottom: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) blockquote {
+    margin-inline: 0;
+    padding: 0.15rem 1.15rem;
+    border-left: 4px solid var(--mellow-editor-primary-soft);
+    border-radius: 0 var(--mellow-editor-radius-small) var(--mellow-editor-radius-small) 0;
+    color: var(--mellow-editor-text-muted);
+    background: var(--mellow-editor-primary-faint);
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) hr {
+    height: 0;
+    margin-block: 2rem;
+    border: 0;
+    border-top: 1px dashed var(--mellow-editor-border);
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :not(pre) > code {
+    padding: 0.14em 0.4em;
+    border-radius: 6px;
+    color: var(--mellow-editor-primary-strong);
+    background: var(--mellow-editor-primary-soft);
+    font-size: 0.92em;
+    font-weight: 700;
+}
+
+/* Keep Vditor's editable source and rendered preview separate instead of painting
+ * the whole render block black. The preview mirrors Mellow's frontend code frame. */
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="code-block"] {
+    position: relative;
+    margin: 1.35rem 0;
+    overflow: visible;
+    color: inherit;
+    background: transparent;
+}
+
+.mellow-enhance-editor--front .vditor-wysiwyg div.vditor-wysiwyg__block[data-type="code-block"]::before {
+    content: none;
+}
+
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="code-block"] > pre:first-child,
+.mellow-enhance-editor--front pre.vditor-wysiwyg__preview,
+.mellow-enhance-editor--front pre.vditor-ir__preview {
+    box-sizing: border-box;
+    position: relative;
+    width: 100%;
+    margin: 0 !important;
+    overflow-x: auto;
+    padding: 2.9rem 1.25rem 1.15rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--mellow-editor-radius-medium);
+    color: var(--mellow-editor-code-text) !important;
+    background: var(--mellow-editor-code-bg) !important;
+    font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    tab-size: 4;
+    scrollbar-width: thin;
+    scrollbar-color: #5f5f63 #252526;
+    scrollbar-gutter: stable;
+}
+
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="code-block"] > pre:first-child::before,
+.mellow-enhance-editor--front pre.vditor-wysiwyg__preview::before,
+.mellow-enhance-editor--front pre.vditor-ir__preview::before {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 2.25rem;
+    border-radius: var(--mellow-editor-radius-medium) var(--mellow-editor-radius-medium) 0 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: #252526;
+    content: "";
+    pointer-events: none;
+}
+
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="code-block"] > pre:first-child::after,
+.mellow-enhance-editor--front pre.vditor-wysiwyg__preview::after,
+.mellow-enhance-editor--front pre.vditor-ir__preview::after {
+    position: absolute;
+    z-index: 2;
+    top: 0.9rem;
+    left: 1rem;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ff6b6b;
+    box-shadow: 13px 0 #ffd43b, 26px 0 #69db7c;
+    content: "";
+    pointer-events: none;
+}
+
+/* Clicking a WYSIWYG preview exposes its Markdown source. Show one view at a
+ * time so the editor no longer presents two copies of the same code block. */
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="code-block"]
+    > pre:first-child:not([style*="display: none"]):not([style*="display:none"])
+    + pre.vditor-wysiwyg__preview {
+    display: none !important;
+}
+
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="code-block"]
+    > pre:first-child:not([style*="display: none"]):not([style*="display:none"])
+    > code {
+    color: var(--mellow-editor-code-text) !important;
+    background: transparent !important;
+    background-image: none !important;
+    font: inherit;
+    white-space: pre-wrap;
+}
+
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="code-block"]:has(
+    > pre:first-child:not([style*="display: none"]):not([style*="display:none"])
+)::after {
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    left: 4rem;
+    display: flex;
+    align-items: center;
+    max-width: calc(100% - 5rem);
+    height: 2.25rem;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.52);
+    content: attr(data-mellow-language);
+    font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.035em;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview) > code {
+    display: block;
+    max-height: none !important;
+    overflow: visible;
+    padding: 0 !important;
+    color: var(--mellow-editor-code-text) !important;
+    background: transparent !important;
+    background-image: none !important;
+    font: inherit;
+    white-space: pre;
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview) .vditor-copy {
+    position: static;
+    display: block;
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview) .vditor-copy::before {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 4rem;
+    display: flex;
+    align-items: center;
+    max-width: calc(100% - 9rem);
+    height: 2.25rem;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.52);
+    content: attr(data-mellow-language);
+    font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.035em;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview) .vditor-copy span {
+    position: absolute;
+    z-index: 3;
+    top: 0.4rem;
+    right: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.7rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 7px;
+    color: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.08);
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+    transition: color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview) .vditor-copy span:hover,
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview) .vditor-copy span:focus-visible {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview)::-webkit-scrollbar,
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="code-block"] > pre:first-child::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview)::-webkit-scrollbar-track,
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="code-block"] > pre:first-child::-webkit-scrollbar-track {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: #252526;
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview)::-webkit-scrollbar-thumb,
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="code-block"] > pre:first-child::-webkit-scrollbar-thumb {
+    min-width: 36px;
+    border: 2px solid #252526;
+    border-radius: 999px;
+    background: #5f5f63;
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview)::-webkit-scrollbar-button,
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="code-block"] > pre:first-child::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* Rendered formulas and diagrams are content cards, while their editable source
+ * remains in the regular code-frame treatment above. */
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview):has(
+    > code:is(.language-math, .language-mermaid)
+) {
+    min-height: 120px;
+    padding: 1.15rem !important;
+    border-color: color-mix(in oklch, var(--mellow-editor-primary) 18%, var(--mellow-editor-border));
+    color: var(--mellow-editor-text) !important;
+    background: var(--mellow-editor-primary-faint) !important;
+    box-shadow: none !important;
+    filter: none !important;
+    font-family: inherit;
+    scrollbar-color: color-mix(in oklch, var(--mellow-editor-primary) 32%, transparent) transparent;
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview):has(
+    > code:is(.language-math, .language-mermaid)
+)::before,
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview):has(
+    > code:is(.language-math, .language-mermaid)
+)::after {
+    content: none;
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview)
+    > code:is(.language-math, .language-mermaid) {
+    display: grid;
+    min-height: 88px;
+    place-items: center;
+    color: var(--mellow-editor-text) !important;
+    font-family: inherit;
+    white-space: normal;
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview):has(
+    > code:is(.language-math, .language-mermaid)
+) * {
+    box-shadow: none !important;
+    filter: none !important;
+    text-shadow: none !important;
+}
+
+.mellow-enhance-editor--front :is(pre.vditor-wysiwyg__preview, pre.vditor-ir__preview):has(
+    > code:is(.language-math, .language-mermaid)
+) .vditor-copy {
+    display: none;
+}
+
+.mellow-enhance-editor--front :is(.language-math, .language-mermaid) svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: auto;
+    font-family: inherit !important;
+}
+
+.mellow-enhance-editor--front .language-math .katex-display {
+    max-width: 100%;
+    margin: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* VS Code Dark+ token palette, kept in sync with Mellow's frontend code frame. */
+.mellow-enhance-editor--front :is(.vditor-wysiwyg__preview, .vditor-ir__preview) :is(.hljs-comment, .hljs-quote) {
+    color: #6a9955;
+}
+
+.mellow-enhance-editor--front :is(.vditor-wysiwyg__preview, .vditor-ir__preview) :is(.hljs-keyword, .hljs-literal, .hljs-name, .hljs-symbol) {
+    color: #569cd6;
+}
+
+.mellow-enhance-editor--front :is(.vditor-wysiwyg__preview, .vditor-ir__preview) .hljs-number {
+    color: #b5cea8;
+}
+
+.mellow-enhance-editor--front :is(.vditor-wysiwyg__preview, .vditor-ir__preview) :is(.hljs-string, .hljs-meta .hljs-string) {
+    color: #ce9178;
+}
+
+.mellow-enhance-editor--front :is(.vditor-wysiwyg__preview, .vditor-ir__preview) :is(.hljs-title, .hljs-title.class_, .hljs-title.function_) {
+    color: #dcdcaa;
+}
+
+.mellow-enhance-editor--front :is(.vditor-wysiwyg__preview, .vditor-ir__preview) :is(.hljs-built_in, .hljs-type) {
+    color: #4ec9b0;
+}
+
+.mellow-enhance-editor--front :is(.vditor-wysiwyg__preview, .vditor-ir__preview) :is(.hljs-attr, .hljs-attribute, .hljs-params, .hljs-template-variable, .hljs-variable) {
+    color: #9cdcfe;
+}
+
+.mellow-enhance-editor--front :is(.vditor-wysiwyg__preview, .vditor-ir__preview) :is(.hljs-regexp, .hljs-template-tag) {
+    color: #d16969;
+}
+
+/* Raw HTML previews such as <details> also use Vditor's preview class. They
+ * must not inherit the code-frame chrome above. */
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="html-block"] > pre.vditor-wysiwyg__preview,
+.mellow-enhance-editor--front .vditor-ir__node[data-type="html-block"] > pre.vditor-ir__preview {
+    position: relative;
+    width: auto;
+    min-height: 0;
+    margin: 0 !important;
+    overflow: visible;
+    padding: 0 !important;
+    border: 0;
+    border-radius: 0;
+    color: inherit !important;
+    background: transparent !important;
+    font: inherit;
+    white-space: normal;
+    cursor: default;
+    scrollbar-width: auto;
+}
+
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="html-block"] > pre.vditor-wysiwyg__preview::before,
+.mellow-enhance-editor--front .vditor-wysiwyg__block[data-type="html-block"] > pre.vditor-wysiwyg__preview::after,
+.mellow-enhance-editor--front .vditor-ir__node[data-type="html-block"] > pre.vditor-ir__preview::before,
+.mellow-enhance-editor--front .vditor-ir__node[data-type="html-block"] > pre.vditor-ir__preview::after {
+    content: none;
+}
+
+/* Vditor splits an HTML <details> pair and the Markdown between it into
+ * adjacent editor nodes. JavaScript marks those nodes as one visual group so
+ * the backend reproduces Mellow's single collapsible frontend card. */
+.mellow-enhance-editor--front .vditor-reset > .mellow-details-group {
+    box-sizing: border-box;
+    margin: 0 !important;
+    border: 0;
+    background: var(--mellow-editor-primary-faint);
+}
+
+.mellow-enhance-editor--front .vditor-reset > .mellow-details-group--start {
+    margin-top: 1.35rem !important;
+    overflow: hidden;
+    padding: 0 !important;
+    border-radius: var(--mellow-editor-radius-medium) var(--mellow-editor-radius-medium) 0 0;
+}
+
+.mellow-enhance-editor--front .vditor-reset > .mellow-details-group--start.is-closed {
+    margin-bottom: 1.35rem !important;
+    border-radius: var(--mellow-editor-radius-medium);
+}
+
+.mellow-enhance-editor--front .mellow-details-group--start > pre:first-child {
+    margin: 0 !important;
+}
+
+.mellow-enhance-editor--front .mellow-details-group--start :is(.vditor-wysiwyg__preview, .vditor-ir__preview) details {
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: inherit;
+    background: transparent !important;
+}
+
+.mellow-enhance-editor--front .mellow-details-group--start :is(.vditor-wysiwyg__preview, .vditor-ir__preview) summary {
+    margin: 0 !important;
+    padding: 0.8rem 1rem;
+    border-radius: inherit;
+    color: var(--mellow-editor-text-strong);
+    background: transparent;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 160ms ease, background-color 160ms ease;
+}
+
+.mellow-enhance-editor--front .mellow-details-group--start :is(.vditor-wysiwyg__preview, .vditor-ir__preview) summary:hover {
+    color: var(--mellow-editor-primary-strong);
+    background: var(--mellow-editor-primary-soft);
+}
+
+.mellow-enhance-editor--front .vditor-reset > .mellow-details-group--body {
+    padding: 0.45rem 1rem !important;
+}
+
+.mellow-enhance-editor--front .vditor-reset > :is(ul, ol).mellow-details-group--body {
+    padding-left: 2.65rem !important;
+}
+
+.mellow-enhance-editor--front .vditor-reset > .mellow-details-group--body[data-type="code-block"] {
+    padding: 0.75rem 1rem !important;
+}
+
+.mellow-enhance-editor--front .vditor-reset > .mellow-details-group--end {
+    min-height: 0.8rem;
+    margin-bottom: 1.35rem !important;
+    overflow: hidden;
+    padding: 0 !important;
+    border-radius: 0 0 var(--mellow-editor-radius-medium) var(--mellow-editor-radius-medium);
+}
+
+.mellow-enhance-editor--front .vditor-reset > .mellow-details-group--end > * {
+    display: none !important;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) table {
+    width: 100%;
+    margin: 1.5rem 0;
+    overflow: hidden;
+    border: 1px solid var(--mellow-editor-border);
+    border-radius: var(--mellow-editor-radius-medium);
+    border-spacing: 0;
+    border-collapse: separate;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(th, td) {
+    min-width: 7rem;
+    padding: 0.7rem 0.9rem;
+    border: 0;
+    border-bottom: 1px solid var(--mellow-editor-border);
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(th, td):not([align]),
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(th, td)[align="left" i] {
+    text-align: left;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(th, td)[align="center" i] {
+    text-align: center;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) :is(th, td)[align="right" i] {
+    text-align: right;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) th {
+    color: var(--mellow-editor-text-strong);
+    background: var(--mellow-editor-primary-faint);
+    font-weight: 600;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) tr:last-child td {
+    border-bottom: 0;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) tbody tr {
+    transition: background-color 160ms ease;
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) tbody tr:hover {
+    background: var(--mellow-editor-primary-faint);
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) mark {
+    padding: 0.05em 0.25em;
+    border-radius: 4px;
+    color: inherit;
+    background: rgba(246, 203, 65, 0.5);
+}
+
+.mellow-enhance-editor--front :is(.vditor-reset, .vditor-wysiwyg__preview) kbd {
+    display: inline-block;
+    min-width: 1.65em;
+    padding: 0.08em 0.42em;
+    border: 1px solid var(--mellow-editor-border);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    color: var(--mellow-editor-text);
+    background: var(--mellow-editor-surface);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.85em;
+    text-align: center;
+}
