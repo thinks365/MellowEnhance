@@ -207,6 +207,395 @@
     margin-right: 6px;
 }
 
+.mellow-admonition-toolbar-trigger {
+    display: inline-grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 5px;
+    font: 800 17px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #657683;
+    background: transparent;
+    cursor: pointer;
+}
+
+.mellow-admonition-toolbar-trigger:hover,
+.mellow-admonition-toolbar-trigger:focus-visible,
+.mellow-admonition-toolbar-trigger[aria-expanded="true"] {
+    color: #28668a;
+    background: #e7f1f7;
+    outline: none;
+}
+
+.mellow-video-toolbar-trigger {
+    display: inline-grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 5px;
+    color: #657683;
+    background: transparent;
+    font: 700 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    cursor: pointer;
+}
+
+.mellow-video-toolbar-trigger:hover,
+.mellow-video-toolbar-trigger:focus-visible,
+.mellow-video-toolbar-trigger[aria-expanded="true"] {
+    color: #28668a;
+    background: #e7f1f7;
+    outline: none;
+}
+
+#wmd-button-row .mellow-admonition-toolbar-button--native {
+    box-sizing: border-box;
+    width: 26px;
+    height: 26px;
+    margin-right: 4px;
+    padding: 0;
+}
+
+#wmd-button-row .mellow-admonition-toolbar-button--native:hover {
+    background: transparent;
+}
+
+#wmd-button-row .mellow-admonition-toolbar-button--native .mellow-admonition-toolbar-trigger {
+    width: 26px;
+    height: 26px;
+}
+
+#wmd-button-row .mellow-video-toolbar-button--native {
+    box-sizing: border-box;
+    width: 26px;
+    height: 26px;
+    margin-right: 4px;
+    padding: 0;
+}
+
+#wmd-button-row .mellow-video-toolbar-button--native:hover {
+    background: transparent;
+}
+
+#wmd-button-row .mellow-video-toolbar-button--native .mellow-video-toolbar-trigger {
+    width: 26px;
+    height: 26px;
+}
+
+.mellow-enhance-editor-shell .mellow-admonition-toolbar-button--vditor {
+    display: flex;
+    align-items: center;
+}
+
+.mellow-enhance-editor-shell .mellow-video-toolbar-button--vditor {
+    display: flex;
+    align-items: center;
+}
+
+.mellow-admonition-insert-menu {
+    position: fixed;
+    z-index: 1200;
+    display: grid;
+    box-sizing: border-box;
+    min-width: 210px;
+    padding: 6px;
+    overflow: hidden;
+    border: 1px solid #dce4e9;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 12px 32px rgba(35, 52, 64, 0.18);
+}
+
+.mellow-admonition-insert-menu[hidden] {
+    display: none !important;
+}
+
+.mellow-admonition-insert-menu__option {
+    --mellow-menu-admonition-color: #4f9ee8;
+    display: grid;
+    grid-template-columns: 12px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    color: #384650;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.mellow-admonition-insert-menu__option:hover,
+.mellow-admonition-insert-menu__option:focus-visible {
+    background: #f0f5f8;
+    outline: none;
+}
+
+.mellow-admonition-insert-menu__option--tip {
+    --mellow-menu-admonition-color: #00a991;
+}
+
+.mellow-admonition-insert-menu__option--important {
+    --mellow-menu-admonition-color: #a66bd7;
+}
+
+.mellow-admonition-insert-menu__option--warning {
+    --mellow-menu-admonition-color: #d97a25;
+}
+
+.mellow-admonition-insert-menu__option--caution {
+    --mellow-menu-admonition-color: #de3d48;
+}
+
+.mellow-admonition-insert-menu__dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--mellow-menu-admonition-color);
+}
+
+.mellow-admonition-insert-menu__option code {
+    color: #83919b;
+    background: transparent;
+    font-size: 11px;
+}
+
+.mellow-admonition-insert-menu.is-dark {
+    border-color: #3b4652;
+    background: #20252c;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.38);
+}
+
+.mellow-admonition-insert-menu.is-dark .mellow-admonition-insert-menu__option {
+    color: #e2e8ee;
+}
+
+.mellow-admonition-insert-menu.is-dark .mellow-admonition-insert-menu__option:hover,
+.mellow-admonition-insert-menu.is-dark .mellow-admonition-insert-menu__option:focus-visible {
+    background: #303842;
+}
+
+.mellow-admonition-insert-menu.is-dark .mellow-admonition-insert-menu__option code {
+    color: #9aa7b2;
+}
+
+.mellow-video-insert-menu {
+    position: fixed;
+    z-index: 1200;
+    display: grid;
+    box-sizing: border-box;
+    min-width: 230px;
+    padding: 6px;
+    overflow: hidden;
+    border: 1px solid #dce4e9;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 12px 32px rgba(35, 52, 64, 0.18);
+}
+
+.mellow-video-insert-menu[hidden] {
+    display: none !important;
+}
+
+.mellow-video-insert-menu__option {
+    --mellow-video-menu-color: #fb7299;
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 8px;
+    color: #384650;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.mellow-video-insert-menu__option--youtube {
+    --mellow-video-menu-color: #ff0033;
+}
+
+.mellow-video-insert-menu__option:hover,
+.mellow-video-insert-menu__option:focus-visible {
+    background: #f0f5f8;
+    outline: none;
+}
+
+.mellow-video-insert-menu__badge {
+    display: grid;
+    width: 34px;
+    height: 28px;
+    place-items: center;
+    border-radius: 8px;
+    color: #fff;
+    background: var(--mellow-video-menu-color);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.mellow-video-insert-menu__option > span:last-child {
+    display: grid;
+    gap: 2px;
+}
+
+.mellow-video-insert-menu__option strong {
+    font-size: 13px;
+}
+
+.mellow-video-insert-menu__option small {
+    color: #83919b;
+    font-size: 11px;
+}
+
+.mellow-video-insert-menu.is-dark {
+    border-color: #3b4652;
+    background: #20252c;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.38);
+}
+
+.mellow-video-insert-menu.is-dark .mellow-video-insert-menu__option {
+    color: #e2e8ee;
+}
+
+.mellow-video-insert-menu.is-dark .mellow-video-insert-menu__option:hover,
+.mellow-video-insert-menu.is-dark .mellow-video-insert-menu__option:focus-visible {
+    background: #303842;
+}
+
+.mellow-video-insert-menu.is-dark .mellow-video-insert-menu__option small {
+    color: #9aa7b2;
+}
+
+.mellow-video-dialog-backdrop {
+    position: fixed;
+    z-index: 1300;
+    inset: 0;
+    display: grid;
+    box-sizing: border-box;
+    place-items: center;
+    padding: 16px;
+    background: rgba(22, 31, 36, 0.48);
+    backdrop-filter: blur(4px);
+}
+
+.mellow-video-dialog {
+    display: grid;
+    box-sizing: border-box;
+    width: min(520px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    gap: 16px;
+    padding: 20px;
+    overflow-y: auto;
+    border: 1px solid #dce4e9;
+    border-radius: 16px;
+    color: #384650;
+    background: #fff;
+    box-shadow: 0 20px 54px rgba(20, 31, 38, 0.26);
+}
+
+.mellow-video-dialog__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mellow-video-dialog__header h3 {
+    flex: 1;
+    margin: 0;
+    font-size: 18px;
+}
+
+.mellow-video-dialog__platform {
+    padding: 5px 9px;
+    border-radius: 999px;
+    color: #b84d72;
+    background: #fff0f5;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.mellow-video-dialog__platform--youtube {
+    color: #c70028;
+    background: #fff0f2;
+}
+
+.mellow-video-dialog__field {
+    display: grid;
+    gap: 7px;
+    color: #44535e;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.mellow-video-dialog__field :is(input, textarea) {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 38px;
+    padding: 9px 11px;
+    border: 1px solid #cfd9df;
+    border-radius: 9px;
+    color: #303b43;
+    background: #fff;
+    font: 400 13px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    resize: vertical;
+}
+
+.mellow-video-dialog__field :is(input, textarea):focus {
+    border-color: #4d96bc;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(77, 150, 188, 0.14);
+}
+
+.mellow-video-dialog__error {
+    margin: -4px 0 0;
+    padding: 9px 11px;
+    border-radius: 8px;
+    color: #9b3740;
+    background: #fff0f1;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.mellow-video-dialog__error[hidden] {
+    display: none !important;
+}
+
+.mellow-video-dialog__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.mellow-video-dialog-backdrop.is-dark .mellow-video-dialog {
+    border-color: #3b4652;
+    color: #e2e8ee;
+    background: #20252c;
+    box-shadow: 0 20px 54px rgba(0, 0, 0, 0.48);
+}
+
+.mellow-video-dialog-backdrop.is-dark .mellow-video-dialog__field {
+    color: #d9e0e6;
+}
+
+.mellow-video-dialog-backdrop.is-dark .mellow-video-dialog__field :is(input, textarea) {
+    border-color: #46525e;
+    color: #eef3f6;
+    background: #171b20;
+}
+
+.mellow-video-dialog-backdrop.is-dark .mellow-video-dialog__error {
+    color: #ffb5ba;
+    background: rgba(222, 61, 72, 0.16);
+}
+
 /* Typecho's writing page uses flex columns. Without an explicit zero minimum,
  * Vditor's toolbar or a wide Markdown node becomes the main column's intrinsic
  * width and pushes the settings column outside the viewport. */
@@ -231,6 +620,7 @@
 }
 
 .mellow-enhance-editor-shell {
+    position: relative;
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
@@ -276,6 +666,262 @@
 
 .mellow-enhance-editor-shell .vditor-toolbar__item button {
     min-height: 28px;
+}
+
+/* Mellow admonitions are represented as temporary blockquotes inside Vditor.
+ * Only presentation is changed here; the original Markdown remains the value
+ * synchronized to Typecho's native editor. */
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition {
+    --mellow-admonition-color: #4f9ee8;
+    --mellow-admonition-background: rgba(79, 158, 232, 0.12);
+    box-sizing: border-box;
+    margin: 1.25em 0 !important;
+    padding: 1rem 1.2rem !important;
+    overflow: hidden;
+    border: 0 !important;
+    border-radius: 16px !important;
+    color: inherit;
+    background: var(--mellow-admonition-background) !important;
+    background: color-mix(in oklch, var(--mellow-admonition-color) 12%, transparent) !important;
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition--tip {
+    --mellow-admonition-color: #00a991;
+    --mellow-admonition-background: rgba(0, 169, 145, 0.12);
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition--important {
+    --mellow-admonition-color: #a66bd7;
+    --mellow-admonition-background: rgba(166, 107, 215, 0.12);
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition--warning {
+    --mellow-admonition-color: #d97a25;
+    --mellow-admonition-background: rgba(217, 122, 37, 0.12);
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition--caution {
+    --mellow-admonition-color: #de3d48;
+    --mellow-admonition-background: rgba(222, 61, 72, 0.12);
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition__marker {
+    min-height: 1.5rem;
+    margin: 0 0 0.55rem !important;
+    padding: 0 !important;
+    font-size: 0 !important;
+    line-height: 1.5;
+    color: transparent !important;
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition__marker::before,
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition--raw::before {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--mellow-admonition-color);
+    content: attr(data-mellow-admonition-title);
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition__marker--inline-body::after,
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition--raw::after {
+    display: block;
+    margin-top: 0.55rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    color: var(--textarea-text-color, #30343b);
+    content: attr(data-mellow-admonition-body);
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition > :not(.mellow-editor-admonition__marker):first-child,
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition__marker + * {
+    margin-top: 0 !important;
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition > :last-child {
+    margin-bottom: 0 !important;
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition__marker.is-editing,
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition--raw.is-editing {
+    min-height: 0;
+    font-size: 1rem !important;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    color: var(--second-color, #6f7b86) !important;
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition__marker.is-editing::before,
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition__marker.is-editing::after,
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition--raw.is-editing::before,
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition--raw.is-editing::after {
+    display: none;
+}
+
+.mellow-enhance-editor-shell.is-dark :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-admonition {
+    background: color-mix(in oklch, var(--mellow-admonition-color) 18%, transparent) !important;
+}
+
+/* Video directives stay editable Markdown in Vditor while presenting a
+ * lightweight card preview. The real third-party iframe only appears on the
+ * published article, so it cannot steal focus inside the editor. */
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-video {
+    --mellow-editor-video-color: #fb7299;
+    position: relative;
+    display: grid;
+    min-height: 210px;
+    margin: 1.35rem 0 !important;
+    padding: 54px 24px 28px !important;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--mellow-editor-video-color) 28%, #dce4e9) !important;
+    border-radius: 16px !important;
+    background:
+        radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--mellow-editor-video-color) 23%, transparent), transparent 34%),
+        linear-gradient(145deg, #f8fafb, #edf3f5) !important;
+    box-shadow: 0 10px 25px rgba(30, 49, 61, 0.08);
+    place-items: center;
+    text-align: center;
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-video--youtube {
+    --mellow-editor-video-color: #ff0033;
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-video > * {
+    visibility: hidden;
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-video::before {
+    position: absolute;
+    top: 18px;
+    left: 20px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    color: #fff;
+    background: var(--mellow-editor-video-color);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.4;
+    content: attr(data-mellow-video-platform-label);
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-video::after {
+    display: block;
+    max-width: 90%;
+    overflow: hidden;
+    color: #33414a;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.6;
+    text-overflow: ellipsis;
+    white-space: pre-line;
+    content: attr(data-mellow-video-title) "\A" attr(data-mellow-video-source);
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-video.is-editing {
+    display: block;
+    min-height: 0;
+    padding: 1rem 1.2rem !important;
+    border-color: var(--mellow-editor-video-color) !important;
+    color: var(--textarea-text-color, #30343b) !important;
+    background: transparent !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--mellow-editor-video-color) 16%, transparent);
+    text-align: left;
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-video.is-editing > * {
+    visibility: visible;
+}
+
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-video.is-editing::before,
+.mellow-enhance-editor-shell :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-video.is-editing::after {
+    display: none;
+}
+
+.mellow-enhance-editor-shell.is-dark :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-video {
+    border-color: color-mix(in srgb, var(--mellow-editor-video-color) 34%, #3b4652) !important;
+    background:
+        radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--mellow-editor-video-color) 22%, transparent), transparent 34%),
+        linear-gradient(145deg, #252b31, #1c2228) !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+.mellow-enhance-editor-shell.is-dark :is(.vditor-wysiwyg, .vditor-ir) .mellow-editor-video::after {
+    color: #e5ebef;
+}
+
+.mellow-editor-video-actions-layer {
+    position: absolute;
+    z-index: 12;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.mellow-editor-video-actions {
+    position: absolute;
+    display: flex;
+    gap: 6px;
+    padding: 4px;
+    border: 1px solid rgba(116, 132, 142, 0.22);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 7px 20px rgba(26, 43, 54, 0.16);
+    backdrop-filter: blur(10px);
+    pointer-events: auto;
+}
+
+.mellow-editor-video-actions[hidden] {
+    display: none !important;
+}
+
+.mellow-editor-video-action {
+    min-height: 30px;
+    padding: 5px 10px;
+    border: 0;
+    border-radius: 7px;
+    color: #475761;
+    background: transparent;
+    font: 600 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    cursor: pointer;
+}
+
+.mellow-editor-video-action:hover,
+.mellow-editor-video-action:focus-visible {
+    color: #28668a;
+    background: #e7f1f7;
+    outline: none;
+}
+
+.mellow-editor-video-action--delete:hover,
+.mellow-editor-video-action--delete:focus-visible {
+    color: #b62f3b;
+    background: #fff0f1;
+}
+
+.mellow-enhance-editor-shell.is-dark .mellow-editor-video-actions {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(30, 36, 42, 0.9);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
+}
+
+.mellow-enhance-editor-shell.is-dark .mellow-editor-video-action {
+    color: #d7e0e6;
+}
+
+.mellow-enhance-editor-shell.is-dark .mellow-editor-video-action:hover,
+.mellow-enhance-editor-shell.is-dark .mellow-editor-video-action:focus-visible {
+    color: #b8dff2;
+    background: #303e48;
+}
+
+.mellow-enhance-editor-shell.is-dark .mellow-editor-video-action--delete:hover,
+.mellow-enhance-editor-shell.is-dark .mellow-editor-video-action--delete:focus-visible {
+    color: #ffb6bd;
+    background: rgba(222, 61, 72, 0.18);
 }
 
 .mellow-enhance-editor-shell.is-initializing::before {

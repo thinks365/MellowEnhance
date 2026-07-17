@@ -17,7 +17,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  *
  * @package Mellow 增强
  * @author thinks365
- * @version 2.3.0
+ * @version 2.4.3
  * @link https://github.com/thinks365/Mellow
  */
 class Plugin implements PluginInterface
@@ -36,6 +36,7 @@ class Plugin implements PluginInterface
         \Typecho\Plugin::factory('admin/write-post.php')->content = __CLASS__ . '::renderDownloads';
         \Typecho\Plugin::factory('admin/write-post.php')->bottom = __CLASS__ . '::renderEditorAssets';
         \Typecho\Plugin::factory('admin/write-page.php')->bottom = __CLASS__ . '::renderEditorAssets';
+        \Typecho\Plugin::factory('admin/menu.php')->navBar = __CLASS__ . '::renderAdminNav';
         \Typecho\Plugin::factory('Widget_Archive')->header = __CLASS__ . '::renderFrontendHead';
         \Typecho\Plugin::factory('Widget_Archive')->footer = __CLASS__ . '::renderFrontendAssets';
 
@@ -132,10 +133,165 @@ class Plugin implements PluginInterface
             _t('该选项与所见即所得模式相互独立，可分别决定是否使用前端文章正文样式。')
         );
         $form->addInput($instantRenderFrontendStyle);
+
+        self::renderConfigLayout($form);
     }
 
     public static function personalConfig(Form $form)
     {
+    }
+
+    /**
+     * 使用与 Mellow 主题设置一致的分组卡片布局包装插件原生字段。
+     */
+    private static function renderConfigLayout(Form $form): void
+    {
+        $layoutClass = class_exists('Typecho\\Widget\\Helper\\Layout')
+            ? 'Typecho\\Widget\\Helper\\Layout'
+            : 'Typecho_Widget_Helper_Layout';
+        $groups = array(
+            'rendering' => array(
+                'icon' => 'fa6-solid:wand-magic-sparkles',
+                'label' => '内容渲染',
+                'description' => '按需启用文章正文中的公式与图表渲染；关闭的功能不会加载对应运行库。',
+                'fields' => array('enableLatex', 'enableMermaid')
+            ),
+            'mermaid' => array(
+                'icon' => 'fa6-solid:diagram-project',
+                'label' => 'Mermaid',
+                'description' => '调整 Mermaid 图表的视图切换、复制体验以及与 Mellow 主题的配色联动。',
+                'fields' => array('enableMermaidSourceToggle', 'mermaidFollowMellowTheme')
+            ),
+            'editor' => array(
+                'icon' => 'fa6-solid:pen-to-square',
+                'label' => 'Vditor 编辑器',
+                'description' => '选择需要加入 Typecho 写作页的增强编辑模式及默认打开行为。',
+                'fields' => array('enableWysiwyg', 'enableInstantRender', 'autoOpenInstantRender')
+            ),
+            'editor-style' => array(
+                'icon' => 'fa6-solid:palette',
+                'label' => '编辑器样式',
+                'description' => '分别设置两种 Vditor 模式是否模拟 Mellow 前端文章正文样式。',
+                'fields' => array('wysiwygFrontendStyle', 'instantRenderFrontendStyle')
+            )
+        );
+
+        $tabs = new $layoutClass('div', array(
+            'class' => 'mellow-config-tabs mellow-enhance-config-tabs'
+        ));
+        $tabsHeader = new $layoutClass('div', array('class' => 'mellow-config-tabs__header'));
+        $tabsTitle = new $layoutClass('strong', array('class' => 'mellow-config-tabs__title'));
+        $tabsTitle->html('Mellow 增强设置');
+        $tabsHint = new $layoutClass('span', array('class' => 'mellow-config-tabs__hint'));
+        $tabsHint->html('按需开启功能后记得保存设置');
+        $tabsHeader->addItem($tabsTitle);
+        $tabsHeader->addItem($tabsHint);
+        $tabs->addItem($tabsHeader);
+
+        $tabList = new $layoutClass('div', array(
+            'class' => 'mellow-config-tab-list',
+            'role' => 'tablist',
+            'aria-orientation' => 'vertical',
+            'aria-label' => 'Mellow 增强设置分组'
+        ));
+        $panels = array();
+        $groupIndex = 0;
+
+        foreach ($groups as $groupId => $group) {
+            $isActive = 0 === $groupIndex;
+            $button = new $layoutClass('button', array(
+                'class' => 'mellow-config-tab' . ($isActive ? ' is-active' : ''),
+                'type' => 'button',
+                'role' => 'tab',
+                'aria-selected' => $isActive ? 'true' : 'false',
+                'aria-controls' => 'mellow-enhance-config-panel-' . $groupId,
+                'data-tab' => $groupId
+            ));
+            $button->html(
+                '<span class="mellow-config-tab__icon" aria-hidden="true"><iconify-icon icon="'
+                . self::escape($group['icon']) . '" noobserver></iconify-icon></span>'
+                . '<span>' . self::escape($group['label']) . '</span>'
+            );
+            $tabList->addItem($button);
+
+            $panel = new $layoutClass('section', array(
+                'class' => 'mellow-config-panel' . ($isActive ? ' is-active' : ''),
+                'id' => 'mellow-enhance-config-panel-' . $groupId,
+                'role' => 'tabpanel',
+                'data-panel' => $groupId
+            ));
+            $panelHeader = new $layoutClass('div', array('class' => 'mellow-config-panel__header'));
+            $panelIcon = new $layoutClass('span', array(
+                'class' => 'mellow-config-panel__icon',
+                'aria-hidden' => 'true'
+            ));
+            $panelIcon->html('<iconify-icon icon="' . self::escape($group['icon']) . '" noobserver></iconify-icon>');
+            $panelTitle = new $layoutClass('h3');
+            $panelTitle->html(self::escape($group['label']));
+            $panelDescription = new $layoutClass('p');
+            $panelDescription->html(self::escape($group['description']));
+            $panelHeader->addItem($panelIcon);
+            $panelHeader->addItem($panelTitle);
+            $panelHeader->addItem($panelDescription);
+            $panel->addItem($panelHeader);
+
+            foreach ($group['fields'] as $fieldName) {
+                $input = $form->getInput($fieldName);
+                if ($input) {
+                    $form->removeItem($input);
+                    $panel->addItem($input);
+                }
+            }
+
+            $panels[] = $panel;
+            $groupIndex++;
+        }
+
+        $tabs->addItem($tabList);
+        $layout = new $layoutClass('div', array(
+            'class' => 'mellow-config-layout mellow-enhance-config-layout',
+            'data-mellow-enhance-settings' => 'true'
+        ));
+        $content = new $layoutClass('div', array('class' => 'mellow-config-content'));
+        $layout->addItem($tabs);
+        foreach ($panels as $panel) {
+            $content->addItem($panel);
+        }
+        $layout->addItem($content);
+        $form->addItem($layout);
+
+        $options = Options::alloc();
+        $pluginBase = Common::url('MellowEnhance', $options->pluginUrl);
+        $assets = new $layoutClass('');
+        $assets->html(
+            '<link rel="stylesheet" href="' . self::escape(Common::url('assets/settings.css?v=2.4.3', $pluginBase)) . '">'
+            . '<script defer src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>'
+            . '<script defer src="' . self::escape(Common::url('assets/settings.js?v=2.4.3', $pluginBase)) . '"></script>'
+        );
+        $form->addItem($assets);
+    }
+
+    /**
+     * 在 Typecho 后台标题栏提供主题与插件设置的快捷入口。
+     */
+    public static function renderAdminNav(): void
+    {
+        try {
+            if (!\Widget\User::alloc()->pass('administrator', true)) {
+                return;
+            }
+        } catch (\Throwable $error) {
+            return;
+        }
+
+        $options = Options::alloc();
+        $themeUrl = $options->adminUrl('options-theme.php', true);
+        $pluginUrl = $options->adminUrl('options-plugin.php?config=MellowEnhance', true);
+
+        echo '<a class="mellow-enhance-admin-shortcut mellow-enhance-admin-shortcut--theme" href="'
+            . self::escape($themeUrl) . '">' . self::escape(_t('主题设置')) . '</a>';
+        echo '<a class="mellow-enhance-admin-shortcut mellow-enhance-admin-shortcut--plugin" href="'
+            . self::escape($pluginUrl) . '">' . self::escape(_t('Mellow 增强设置')) . '</a>';
     }
 
     private static function setting(string $name, string $default = '0'): string
@@ -380,7 +536,7 @@ class Plugin implements PluginInterface
                 . self::escape(Common::url('dist/js/katex/katex.min.css', $vditorBase)) . '">';
         }
         echo '<link rel="stylesheet" href="'
-            . self::escape(Common::url('assets/frontend.css?v=2.3.0', $pluginBase)) . '">';
+            . self::escape(Common::url('assets/frontend.css?v=2.4.3', $pluginBase)) . '">';
     }
 
     /**
@@ -411,7 +567,7 @@ class Plugin implements PluginInterface
         }
         ?>
         <script>window.MellowEnhanceFrontendConfig = <?php echo json_encode($config, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;</script>
-        <script src="<?php echo self::escape(Common::url('assets/frontend.js?v=2.3.0', $pluginBase)); ?>"></script>
+        <script src="<?php echo self::escape(Common::url('assets/frontend.js?v=2.4.3', $pluginBase)); ?>"></script>
         <?php
     }
 
@@ -460,15 +616,15 @@ class Plugin implements PluginInterface
         <?php if ($editorEnabled): ?>
             <link rel="stylesheet" href="<?php echo self::escape(Common::url('dist/index.css', $vditorBase)); ?>">
         <?php endif; ?>
-        <link rel="stylesheet" href="<?php echo self::escape(Common::url('assets/admin.css?v=2.3.0', $pluginBase)); ?>">
+        <link rel="stylesheet" href="<?php echo self::escape(Common::url('assets/admin.css?v=2.4.3', $pluginBase)); ?>">
         <?php if ($editorEnabled): ?>
-            <link rel="stylesheet" href="<?php echo self::escape(Common::url('assets/mellow-content.css?v=2.3.0', $pluginBase)); ?>">
+            <link rel="stylesheet" href="<?php echo self::escape(Common::url('assets/mellow-content.css?v=2.4.3', $pluginBase)); ?>">
         <?php endif; ?>
         <script>window.MellowEnhanceConfig = <?php echo json_encode($config, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;</script>
         <?php if ($editorEnabled): ?>
             <script src="<?php echo self::escape(Common::url('dist/index.min.js', $vditorBase)); ?>"></script>
         <?php endif; ?>
-            <script src="<?php echo self::escape(Common::url('assets/admin.js?v=2.3.0', $pluginBase)); ?>"></script>
+            <script src="<?php echo self::escape(Common::url('assets/admin.js?v=2.4.3', $pluginBase)); ?>"></script>
         <?php
     }
 }

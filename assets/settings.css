@@ -1,0 +1,375 @@
+.mellow-enhance-config-layout {
+    --mellow-admin-primary: #0aa879;
+    --mellow-admin-primary-strong: #087c5e;
+    --mellow-admin-primary-soft: #e4f5ee;
+    --mellow-admin-surface: #ffffff;
+    --mellow-admin-surface-soft: #f6f9f8;
+    --mellow-admin-text: #26332f;
+    --mellow-admin-muted: #6f7d77;
+    --mellow-admin-border: #dce6e2;
+    --mellow-admin-shadow: 0 10px 28px rgba(28, 73, 59, 0.08);
+    display: grid;
+    grid-template-columns: 194px minmax(0, 1fr);
+    align-items: start;
+    gap: 20px;
+}
+
+.mellow-enhance-config-layout,
+.mellow-enhance-config-layout * {
+    box-sizing: border-box;
+}
+
+.mellow-enhance-config-layout .mellow-config-tabs {
+    position: sticky;
+    top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 7px;
+    border: 1px solid var(--mellow-admin-border);
+    border-radius: 16px;
+    background: #f1f7f4;
+    box-shadow: 0 8px 24px rgba(32, 76, 62, 0.05);
+}
+
+.mellow-enhance-config-layout .mellow-config-tabs__header {
+    display: grid;
+    gap: 3px;
+    margin: 3px 3px 7px;
+    padding: 10px 10px 12px;
+    border-bottom: 1px solid var(--mellow-admin-border);
+}
+
+.mellow-enhance-config-layout .mellow-config-tabs__title {
+    color: var(--mellow-admin-text);
+    font-size: 15px;
+    line-height: 1.35;
+}
+
+.mellow-enhance-config-layout .mellow-config-tabs__hint {
+    color: var(--mellow-admin-muted);
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+.mellow-enhance-config-layout .mellow-config-tab-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mellow-enhance-config-layout .mellow-config-tab {
+    display: flex;
+    width: 100%;
+    min-height: 43px;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 11px;
+    color: #53605b;
+    background: transparent;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 160ms ease, background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.mellow-enhance-config-layout .mellow-config-tab__icon {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.7);
+    font-size: 16px;
+    line-height: 1;
+}
+
+.mellow-enhance-config-layout .mellow-config-tab:hover {
+    color: var(--mellow-admin-primary-strong);
+    background: var(--mellow-admin-primary-soft);
+    transform: translateX(2px);
+}
+
+.mellow-enhance-config-layout .mellow-config-tab.is-active {
+    color: var(--mellow-admin-primary-strong);
+    background: #fff;
+    box-shadow: 0 3px 11px rgba(20, 70, 54, 0.12);
+}
+
+.mellow-enhance-config-layout .mellow-config-tab.is-active .mellow-config-tab__icon {
+    background: var(--mellow-admin-primary-soft);
+}
+
+.mellow-enhance-config-layout .mellow-config-tab:focus-visible,
+.mellow-enhance-config-layout .mellow-switch:focus-visible {
+    outline: 2px solid var(--mellow-admin-primary);
+    outline-offset: 2px;
+}
+
+.mellow-enhance-config-layout .mellow-config-content {
+    min-width: 0;
+}
+
+.mellow-enhance-config-layout .mellow-config-panel {
+    margin-bottom: 20px;
+    padding: 5px 20px 14px;
+    border: 1px solid var(--mellow-admin-border);
+    border-radius: 17px;
+    background: var(--mellow-admin-surface);
+    box-shadow: var(--mellow-admin-shadow);
+}
+
+.mellow-enhance-config-layout .mellow-config-panel__header {
+    position: relative;
+    margin: 13px 0 10px;
+    padding: 0 0 14px 46px;
+    border-bottom: 1px solid #edf2ef;
+}
+
+.mellow-enhance-config-layout .mellow-config-panel__icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    width: 35px;
+    height: 35px;
+    place-items: center;
+    border-radius: 11px;
+    color: var(--mellow-admin-primary-strong);
+    background: var(--mellow-admin-primary-soft);
+    font-size: 18px;
+}
+
+.mellow-enhance-config-layout .mellow-config-tab__icon iconify-icon,
+.mellow-enhance-config-layout .mellow-config-panel__icon iconify-icon {
+    width: 1.15em;
+    height: 1.15em;
+}
+
+.mellow-enhance-config-layout .mellow-config-panel__header h3 {
+    margin: 0 0 4px;
+    color: var(--mellow-admin-text);
+    font-size: 18px;
+    line-height: 1.35;
+}
+
+.mellow-enhance-config-layout .mellow-config-panel__header p {
+    margin: 0;
+    color: var(--mellow-admin-muted);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.mellow-enhance-config-layout .mellow-config-tabs.is-ready + .mellow-config-content > .mellow-config-panel:not(.is-active) {
+    display: none;
+}
+
+.mellow-enhance-config-layout .mellow-config-panel > .typecho-option {
+    margin: 12px 0;
+    padding: 14px 15px;
+    border: 1px solid #e8efec;
+    border-radius: 13px;
+    background: var(--mellow-admin-surface-soft);
+}
+
+.mellow-enhance-config-layout .mellow-config-panel > .typecho-option > li > .typecho-label {
+    margin-bottom: 9px;
+    color: var(--mellow-admin-text);
+    font-size: 14px;
+}
+
+.mellow-enhance-config-layout .typecho-label.mellow-field-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mellow-enhance-config-layout .mellow-field-label__icon {
+    display: inline-grid;
+    width: 27px;
+    height: 27px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 8px;
+    color: var(--mellow-admin-primary-strong);
+    background: var(--mellow-admin-primary-soft);
+    font-size: 13px;
+}
+
+.mellow-enhance-config-layout .mellow-field-label__icon iconify-icon {
+    width: 1.1em;
+    height: 1.1em;
+}
+
+.mellow-enhance-config-layout .typecho-option .description {
+    margin-top: 8px;
+    color: var(--mellow-admin-muted);
+    line-height: 1.6;
+}
+
+.mellow-enhance-config-layout .typecho-option > li > span:not(.multiline) {
+    position: relative;
+    display: inline-flex;
+    margin: 0 7px 5px 0;
+}
+
+.mellow-enhance-config-layout .typecho-option input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.mellow-enhance-config-layout .typecho-option input[type="radio"] + label {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    padding: 7px 13px;
+    border: 1px solid #d5e0dc;
+    border-radius: 10px;
+    color: #56645f;
+    background: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 160ms ease;
+}
+
+.mellow-enhance-config-layout .typecho-option input[type="radio"] + label:hover {
+    border-color: #9fcfbd;
+    color: var(--mellow-admin-primary-strong);
+}
+
+.mellow-enhance-config-layout .typecho-option input[type="radio"]:checked + label {
+    border-color: #93d2bb;
+    color: var(--mellow-admin-primary-strong);
+    background: var(--mellow-admin-primary-soft);
+    box-shadow: 0 0 0 2px rgba(10, 168, 121, 0.07);
+}
+
+.mellow-enhance-config-layout .typecho-option input[type="radio"]:focus-visible + label {
+    outline: 2px solid var(--mellow-admin-primary);
+    outline-offset: 2px;
+}
+
+.mellow-enhance-config-layout .mellow-switch-source {
+    display: none !important;
+}
+
+.mellow-enhance-config-layout .mellow-switch {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px 4px 3px;
+    border: 0;
+    border-radius: 999px;
+    color: var(--mellow-admin-muted);
+    background: transparent;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.mellow-enhance-config-layout .mellow-switch__track {
+    position: relative;
+    display: block;
+    width: 46px;
+    height: 26px;
+    flex: 0 0 auto;
+    border: 1px solid #b9c8c2;
+    border-radius: 999px;
+    background: #c8d2ce;
+    box-shadow: inset 0 1px 2px rgba(34, 62, 52, 0.12);
+    transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.mellow-enhance-config-layout .mellow-switch__thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(35, 62, 53, 0.24);
+    transition: transform 180ms ease;
+}
+
+.mellow-enhance-config-layout .mellow-switch[aria-checked="true"] {
+    color: var(--mellow-admin-primary-strong);
+}
+
+.mellow-enhance-config-layout .mellow-switch[aria-checked="true"] .mellow-switch__track {
+    border-color: var(--mellow-admin-primary);
+    background: var(--mellow-admin-primary);
+    box-shadow: inset 0 1px 2px rgba(8, 89, 64, 0.18);
+}
+
+.mellow-enhance-config-layout .mellow-switch[aria-checked="true"] .mellow-switch__thumb {
+    transform: translateX(20px);
+}
+
+.mellow-enhance-config-layout .mellow-switch:hover .mellow-switch__track {
+    border-color: var(--mellow-admin-primary);
+}
+
+.mellow-enhance-config-layout .mellow-switch__state {
+    min-width: 2em;
+}
+
+@media (max-width: 850px) {
+    .mellow-enhance-config-layout {
+        grid-template-columns: 166px minmax(0, 1fr);
+        gap: 13px;
+    }
+}
+
+@media (max-width: 700px) {
+    .mellow-enhance-config-layout {
+        display: block;
+    }
+
+    .mellow-enhance-config-layout .mellow-config-tabs {
+        position: static;
+        margin: 0 -4px 16px;
+    }
+
+    .mellow-enhance-config-layout .mellow-config-tabs__header {
+        margin-bottom: 4px;
+    }
+
+    .mellow-enhance-config-layout .mellow-config-tab-list {
+        flex-direction: row;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+
+    .mellow-enhance-config-layout .mellow-config-tab {
+        width: auto;
+        flex: 0 0 auto;
+        padding: 8px 11px;
+        text-align: center;
+    }
+
+    .mellow-enhance-config-layout .mellow-config-tab:hover {
+        transform: none;
+    }
+
+    .mellow-enhance-config-layout .mellow-config-panel {
+        padding-inline: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mellow-enhance-config-layout *,
+    .mellow-enhance-config-layout *::before,
+    .mellow-enhance-config-layout *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}

@@ -2,6 +2,15 @@
 
 Mellow 增强插件内置以下第三方开源软件的发行文件。第三方软件仍由其原作者持有版权，并遵循各自许可证；Mellow 增强的 MIT License 不会替代这些许可证。
 
+## Iconify Icon 与 Font Awesome 6 Free 图标集
+
+- Iconify Icon Web Component：https://iconify.design/
+- Font Awesome Free：https://fontawesome.com/
+- 许可证：Iconify Icon 为 MIT License；Font Awesome Free 图标为 CC BY 4.0
+- 使用位置：插件设置页的分组、字段图标
+
+插件设置页通过 Iconify 官方 Web Component 按图标名称加载 Font Awesome 6 Free 图标；相关图标不会随插件发行包内置。
+
 ## Vditor 3.11.2
 
 - 项目：Vditor
