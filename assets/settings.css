@@ -322,6 +322,117 @@
     min-width: 2em;
 }
 
+.mellow-enhance-config-layout .mellow-config-about {
+    margin: 12px 0 4px;
+    color: var(--mellow-admin-text);
+}
+
+.mellow-enhance-config-layout .mellow-config-about__facts {
+    margin: 0;
+    border-top: 1px solid var(--mellow-admin-border);
+}
+
+.mellow-enhance-config-layout .mellow-config-about__facts > div {
+    display: grid;
+    grid-template-columns: minmax(100px, 140px) minmax(0, 1fr);
+    gap: 18px;
+    padding: 16px 4px;
+    border-bottom: 1px solid var(--mellow-admin-border);
+}
+
+.mellow-enhance-config-layout .mellow-config-about__facts dt {
+    color: var(--mellow-admin-muted);
+    font-weight: 700;
+}
+
+.mellow-enhance-config-layout .mellow-config-about__facts dd {
+    min-width: 0;
+    margin: 0;
+    line-height: 1.7;
+}
+
+.mellow-enhance-config-layout .mellow-config-about__facts dd strong,
+.mellow-enhance-config-layout .mellow-config-about__facts dd span {
+    display: block;
+}
+
+.mellow-enhance-config-layout .mellow-config-about__facts dd span {
+    margin-top: 2px;
+    color: var(--mellow-admin-muted);
+}
+
+.mellow-enhance-config-layout .mellow-config-about code {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 7px;
+    color: var(--mellow-admin-primary-strong);
+    background: var(--mellow-admin-primary-soft);
+    font-family: Consolas, Monaco, monospace;
+}
+
+.mellow-enhance-config-layout .mellow-config-about a {
+    color: var(--mellow-admin-primary-strong);
+    font-weight: 650;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+}
+
+.mellow-enhance-config-layout .mellow-config-about a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.mellow-enhance-config-layout .mellow-config-about__thanks {
+    padding: 20px 4px 8px;
+}
+
+.mellow-enhance-config-layout .mellow-config-about__thanks h4 {
+    margin: 0 0 5px;
+    font-size: 16px;
+}
+
+.mellow-enhance-config-layout .mellow-config-about__thanks > p {
+    margin: 0 0 13px;
+    color: var(--mellow-admin-muted);
+    line-height: 1.7;
+}
+
+.mellow-enhance-config-layout .mellow-config-about__thanks ul {
+    display: grid;
+    gap: 9px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.mellow-enhance-config-layout .mellow-config-about__thanks li {
+    position: relative;
+    padding-left: 15px;
+    line-height: 1.65;
+}
+
+.mellow-enhance-config-layout .mellow-config-about__thanks li::before {
+    position: absolute;
+    top: 0.75em;
+    left: 1px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--mellow-admin-primary);
+    content: "";
+}
+
+.mellow-enhance-config-layout .mellow-config-about__thanks li span {
+    color: var(--mellow-admin-muted);
+}
+
+.mellow-enhance-config-layout .mellow-config-about__thanks .mellow-config-about__license-note {
+    margin-top: 17px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--mellow-admin-border);
+    font-size: 12px;
+}
+
 @media (max-width: 850px) {
     .mellow-enhance-config-layout {
         grid-template-columns: 166px minmax(0, 1fr);
@@ -362,6 +473,11 @@
 
     .mellow-enhance-config-layout .mellow-config-panel {
         padding-inline: 12px;
+    }
+
+    .mellow-enhance-config-layout .mellow-config-about__facts > div {
+        grid-template-columns: 1fr;
+        gap: 4px;
     }
 }
 

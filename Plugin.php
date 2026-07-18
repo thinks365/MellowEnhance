@@ -17,14 +17,11 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  *
  * @package Mellow 增强
  * @author thinks365
- * @version 2.4.3
- * @link https://github.com/thinks365/Mellow
+ * @version 2.4.8
+ * @link https://github.com/thinks365/MellowEnhance
  */
 class Plugin implements PluginInterface
 {
-    /** @var bool 防止 Mellow 兼容入口与 Typecho 原生钩子重复输出。 */
-    private static $frontendHeadRendered = false;
-
     /** @var bool 防止 Mellow 兼容入口与 Typecho 原生钩子重复输出。 */
     private static $frontendAssetsRendered = false;
 
@@ -142,6 +139,38 @@ class Plugin implements PluginInterface
     }
 
     /**
+     * 保存插件设置后返回当前配置页，便于连续调整多个分组。
+     */
+    public static function configHandle($settings, $isInit): void
+    {
+        \Widget\Plugins\Edit::configPlugin('MellowEnhance', (array) $settings);
+
+        if ($isInit) {
+            return;
+        }
+
+        \Widget\Notice::alloc()->set(_t('Mellow 增强设置已经保存'), 'success');
+        $configUrl = Options::alloc()->adminUrl('options-plugin.php?config=MellowEnhance', true);
+        \Typecho\Response::getInstance()
+            ->setStatus(302)
+            ->setHeader('Location', Common::safeUrl($configUrl))
+            ->respond();
+    }
+
+    /**
+     * 从插件入口元数据中读取当前版本，避免 About Tab 单独维护版本号。
+     */
+    private static function pluginVersion(): string
+    {
+        $source = @file_get_contents(__FILE__);
+        if (is_string($source) && preg_match('/@version\s+([0-9A-Za-z._-]+)/', $source, $matches)) {
+            return $matches[1];
+        }
+
+        return '未知';
+    }
+
+    /**
      * 使用与 Mellow 主题设置一致的分组卡片布局包装插件原生字段。
      */
     private static function renderConfigLayout(Form $form): void
@@ -173,6 +202,12 @@ class Plugin implements PluginInterface
                 'label' => '编辑器样式',
                 'description' => '分别设置两种 Vditor 模式是否模拟 Mellow 前端文章正文样式。',
                 'fields' => array('wysiwygFrontendStyle', 'instantRenderFrontendStyle')
+            ),
+            'about' => array(
+                'icon' => 'fa6-solid:circle-info',
+                'label' => '关于',
+                'description' => '查看 Mellow 增强的插件信息、版本、开源许可与第三方项目致谢。',
+                'fields' => array()
             )
         );
 
@@ -243,6 +278,31 @@ class Plugin implements PluginInterface
                 }
             }
 
+            if ('about' === $groupId) {
+                $about = new $layoutClass('div', array('class' => 'mellow-config-about'));
+                $about->html(
+                    '<dl class="mellow-config-about__facts">'
+                    . '<div><dt>插件信息</dt><dd><strong>Mellow 增强</strong><span>Mellow Typecho 主题的配套增强插件，由 thinks365 开发。</span></dd></div>'
+                    . '<div><dt>插件版本</dt><dd><code>v' . self::escape(self::pluginVersion()) . '</code></dd></div>'
+                    . '<div><dt>插件 GitHub</dt><dd><a href="https://github.com/thinks365/MellowEnhance" target="_blank" rel="noopener noreferrer">github.com/thinks365/MellowEnhance</a></dd></div>'
+                    . '<div><dt>插件开源信息</dt><dd>Mellow 增强使用 <a href="https://github.com/thinks365/MellowEnhance/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a> 开源。你可以在保留版权声明和许可证声明的前提下使用、复制、修改与分发本插件。</dd></div>'
+                    . '</dl>'
+                    . '<section class="mellow-config-about__thanks" aria-labelledby="mellow-enhance-config-about-thanks">'
+                    . '<h4 id="mellow-enhance-config-about-thanks">开源致谢</h4>'
+                    . '<p>Mellow 增强的实现离不开以下项目与开源社区，在此特别致谢：</p>'
+                    . '<ul>'
+                    . '<li><a href="https://github.com/thinks365/Mellow" target="_blank" rel="noopener noreferrer">Mellow</a><span>——配套主题与插件设置界面的设计基础。</span></li>'
+                    . '<li><a href="https://typecho.org/" target="_blank" rel="noopener noreferrer">Typecho</a><span>——插件所运行的开源博客平台与扩展接口。</span></li>'
+                    . '<li><a href="https://github.com/Vanessa219/vditor" target="_blank" rel="noopener noreferrer">Vditor</a><span>——所见即所得、即时渲染与 Markdown 编辑能力。</span></li>'
+                    . '<li><a href="https://katex.org/" target="_blank" rel="noopener noreferrer">KaTeX</a> 与 <a href="https://mermaid.js.org/" target="_blank" rel="noopener noreferrer">Mermaid</a><span>——文章公式与图表渲染能力。</span></li>'
+                    . '<li><a href="https://iconify.design/" target="_blank" rel="noopener noreferrer">Iconify</a><span>——插件设置界面的图标支持。</span></li>'
+                    . '</ul>'
+                    . '<p class="mellow-config-about__license-note">各第三方项目仍遵循其各自许可证，详情可查看仓库中的 <a href="https://github.com/thinks365/MellowEnhance/blob/main/THIRD-PARTY-NOTICES.md" target="_blank" rel="noopener noreferrer">第三方开源许可说明</a>。</p>'
+                    . '</section>'
+                );
+                $panel->addItem($about);
+            }
+
             $panels[] = $panel;
             $groupIndex++;
         }
@@ -264,9 +324,9 @@ class Plugin implements PluginInterface
         $pluginBase = Common::url('MellowEnhance', $options->pluginUrl);
         $assets = new $layoutClass('');
         $assets->html(
-            '<link rel="stylesheet" href="' . self::escape(Common::url('assets/settings.css?v=2.4.3', $pluginBase)) . '">'
+            '<link rel="stylesheet" href="' . self::escape(Common::url('assets/settings.css?v=2.4.8', $pluginBase)) . '">'
             . '<script defer src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>'
-            . '<script defer src="' . self::escape(Common::url('assets/settings.js?v=2.4.3', $pluginBase)) . '"></script>'
+            . '<script defer src="' . self::escape(Common::url('assets/settings.js?v=2.4.8', $pluginBase)) . '"></script>'
         );
         $form->addItem($assets);
     }
@@ -512,31 +572,11 @@ class Plugin implements PluginInterface
     }
 
     /**
-     * 输出公式与图表的前端样式。依赖按开关加载，关闭时不增加页面资源。
+     * 保留旧版前端 head 钩子；样式改由运行时按正文内容加载。
      */
     public static function renderFrontendHead(): void
     {
-        if (self::$frontendHeadRendered) {
-            return;
-        }
-
-        $features = self::frontendFeatures();
-        if (!$features['latexEnabled'] && !$features['mermaidEnabled']) {
-            return;
-        }
-
-        self::$frontendHeadRendered = true;
-
-        $options = Options::alloc();
-        $pluginBase = Common::url('MellowEnhance', $options->pluginUrl);
-        $vditorBase = Common::url('vendor/vditor', $pluginBase);
-
-        if ($features['latexEnabled']) {
-            echo '<link rel="stylesheet" href="'
-                . self::escape(Common::url('dist/js/katex/katex.min.css', $vditorBase)) . '">';
-        }
-        echo '<link rel="stylesheet" href="'
-            . self::escape(Common::url('assets/frontend.css?v=2.4.3', $pluginBase)) . '">';
+        // 保留旧钩子兼容性；前端样式由 frontend.js 在检测到对应内容后按需加载。
     }
 
     /**
@@ -559,15 +599,17 @@ class Plugin implements PluginInterface
         $pluginBase = Common::url('MellowEnhance', $options->pluginUrl);
         $vditorBase = Common::url('vendor/vditor', $pluginBase);
         $config = $features;
+        $config['frontendStyleUrl'] = Common::url('assets/frontend.css?v=2.4.8', $pluginBase);
         if ($features['latexEnabled']) {
             $config['katexUrl'] = Common::url('dist/js/katex/katex.min.js', $vditorBase);
+            $config['katexStyleUrl'] = Common::url('dist/js/katex/katex.min.css', $vditorBase);
         }
         if ($features['mermaidEnabled']) {
             $config['mermaidUrl'] = Common::url('dist/js/mermaid/mermaid.min.js', $vditorBase);
         }
         ?>
         <script>window.MellowEnhanceFrontendConfig = <?php echo json_encode($config, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;</script>
-        <script src="<?php echo self::escape(Common::url('assets/frontend.js?v=2.4.3', $pluginBase)); ?>"></script>
+        <script defer src="<?php echo self::escape(Common::url('assets/frontend.js?v=2.4.8', $pluginBase)); ?>"></script>
         <?php
     }
 
@@ -579,18 +621,24 @@ class Plugin implements PluginInterface
         $options = Options::alloc();
         $wysiwygEnabled = '1' === self::setting('enableWysiwyg');
         $instantEnabled = '1' === self::setting('enableInstantRender');
-        $editorEnabled = (bool) $options->markdown && ($wysiwygEnabled || $instantEnabled);
         $pluginBase = Common::url('MellowEnhance', $options->pluginUrl);
         $vditorBase = Common::url('vendor/vditor', $pluginBase);
         $primaryColor = isset($options->primaryColor) ? (string) $options->primaryColor : '#0aa879';
         if (!preg_match('/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $primaryColor)) {
             $primaryColor = '#0aa879';
         }
+        $fontMode = isset($options->fontMode) ? trim((string) $options->fontMode) : 'sans';
+        if (!in_array($fontMode, array('sans', 'content-serif', 'serif'), true)) {
+            $fontMode = 'sans';
+        }
 
         $isMarkdown = true;
         if (method_exists($content, 'have') && $content->have()) {
             $isMarkdown = (bool) $content->isMarkdown;
         }
+        $editorEnabled = (bool) $options->markdown
+            && $isMarkdown
+            && ($wysiwygEnabled || $instantEnabled);
 
         $config = array(
             'editorEnabled' => $editorEnabled,
@@ -598,6 +646,7 @@ class Plugin implements PluginInterface
             'contentIsMarkdown' => $isMarkdown,
             'assetBase' => $vditorBase,
             'primaryColor' => $primaryColor,
+            'fontMode' => $fontMode,
             'autoOpenInstantRender' => '1' === self::setting('autoOpenInstantRender'),
             'modes' => array(
                 'wysiwyg' => array(
@@ -616,15 +665,15 @@ class Plugin implements PluginInterface
         <?php if ($editorEnabled): ?>
             <link rel="stylesheet" href="<?php echo self::escape(Common::url('dist/index.css', $vditorBase)); ?>">
         <?php endif; ?>
-        <link rel="stylesheet" href="<?php echo self::escape(Common::url('assets/admin.css?v=2.4.3', $pluginBase)); ?>">
+            <link rel="stylesheet" href="<?php echo self::escape(Common::url('assets/admin.css?v=2.4.8', $pluginBase)); ?>">
         <?php if ($editorEnabled): ?>
-            <link rel="stylesheet" href="<?php echo self::escape(Common::url('assets/mellow-content.css?v=2.4.3', $pluginBase)); ?>">
+            <link rel="stylesheet" href="<?php echo self::escape(Common::url('assets/mellow-content.css?v=2.4.8', $pluginBase)); ?>">
         <?php endif; ?>
         <script>window.MellowEnhanceConfig = <?php echo json_encode($config, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;</script>
         <?php if ($editorEnabled): ?>
             <script src="<?php echo self::escape(Common::url('dist/index.min.js', $vditorBase)); ?>"></script>
         <?php endif; ?>
-            <script src="<?php echo self::escape(Common::url('assets/admin.js?v=2.4.3', $pluginBase)); ?>"></script>
+            <script src="<?php echo self::escape(Common::url('assets/admin.js?v=2.4.8', $pluginBase)); ?>"></script>
         <?php
     }
 }

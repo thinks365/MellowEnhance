@@ -7,6 +7,7 @@
     var mermaidSourceToggleEnabled = Boolean(config.mermaidSourceToggleEnabled);
     var mermaidFollowMellowTheme = config.mermaidFollowMellowTheme !== false;
     var libraryPromises = {};
+    var stylesheetPromises = {};
     var mermaidSequence = Promise.resolve();
     var mermaidId = 0;
     var mermaidThemeKey = "";
@@ -43,21 +44,71 @@
                 script.id = id;
                 script.src = url;
                 script.async = true;
-                document.head.appendChild(script);
             }
             script.addEventListener("load", function () {
                 if (window[globalName]) {
                     resolve(window[globalName]);
                 } else {
+                    delete libraryPromises[name];
+                    script.remove();
                     reject(new Error(name + " 初始化失败"));
                 }
             }, {once: true});
             script.addEventListener("error", function () {
+                delete libraryPromises[name];
+                script.remove();
                 reject(new Error(name + " 加载失败"));
             }, {once: true});
+
+            if (!script.isConnected) {
+                document.head.appendChild(script);
+            }
         });
 
         return libraryPromises[name];
+    }
+
+    function loadStylesheet(name, url) {
+        if (stylesheetPromises[name]) {
+            return stylesheetPromises[name];
+        }
+        if (!url) {
+            return Promise.reject(new Error(name + " 样式地址不存在"));
+        }
+
+        stylesheetPromises[name] = new Promise(function (resolve, reject) {
+            var id = "mellow-enhance-style-" + name;
+            var stylesheet = document.getElementById(id);
+            if (stylesheet && stylesheet.dataset.mellowLoaded === "true") {
+                resolve(stylesheet);
+                return;
+            }
+
+            if (!stylesheet) {
+                stylesheet = document.createElement("link");
+                stylesheet.id = id;
+                stylesheet.rel = "stylesheet";
+                stylesheet.href = url;
+                stylesheet.media = "print";
+            }
+
+            stylesheet.addEventListener("load", function () {
+                stylesheet.media = "all";
+                stylesheet.dataset.mellowLoaded = "true";
+                resolve(stylesheet);
+            }, {once: true});
+            stylesheet.addEventListener("error", function () {
+                delete stylesheetPromises[name];
+                stylesheet.remove();
+                reject(new Error(name + " 样式加载失败"));
+            }, {once: true});
+
+            if (!stylesheet.isConnected) {
+                document.head.appendChild(stylesheet);
+            }
+        });
+
+        return stylesheetPromises[name];
     }
 
     function createMathElement(source, displayMode, blockElement) {
@@ -654,31 +705,32 @@
     function refreshContent() {
         var roots = contentRoots();
         if (latexEnabled && roots.some(hasLatex)) {
-            if (window.katex) {
-                roots.forEach(renderLatex);
-            } else {
-                loadLibrary("katex", config.katexUrl, "katex").then(function () {
-                    contentRoots().forEach(renderLatex);
-                }).catch(function () {
-                    // 资源不可用时保留原始公式文本，不影响正文其他内容。
-                });
-            }
+            Promise.all([
+                loadStylesheet("frontend", config.frontendStyleUrl),
+                loadStylesheet("katex", config.katexStyleUrl),
+                window.katex
+                    ? Promise.resolve(window.katex)
+                    : loadLibrary("katex", config.katexUrl, "katex")
+            ]).then(function () {
+                contentRoots().forEach(renderLatex);
+            }).catch(function () {
+                // 资源不可用时保留原始公式文本，不影响正文其他内容。
+            });
         }
 
         if (mermaidEnabled && roots.some(hasMermaid)) {
-            if (window.mermaid) {
-                roots.forEach(function (root) {
+            Promise.all([
+                loadStylesheet("frontend", config.frontendStyleUrl),
+                window.mermaid
+                    ? Promise.resolve(window.mermaid)
+                    : loadLibrary("mermaid", config.mermaidUrl, "mermaid")
+            ]).then(function () {
+                contentRoots().forEach(function (root) {
                     renderMermaid(root, false);
                 });
-            } else {
-                loadLibrary("mermaid", config.mermaidUrl, "mermaid").then(function () {
-                    contentRoots().forEach(function (root) {
-                        renderMermaid(root, false);
-                    });
-                }).catch(function () {
-                    // 加载失败时保留原始 Mermaid 代码块，便于阅读和排查。
-                });
-            }
+            }).catch(function () {
+                // 加载失败时保留原始 Mermaid 代码块，便于阅读和排查。
+            });
         }
     }
 

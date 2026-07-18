@@ -1073,7 +1073,7 @@
     }
 
     function initializeNativeAdmonitionToolbar() {
-        if (!config.markdownEnabled) {
+        if (!config.markdownEnabled || config.contentIsMarkdown === false) {
             return;
         }
         var textarea = document.getElementById("text");
@@ -1144,7 +1144,7 @@
     }
 
     function initializeNativeVideoToolbar() {
-        if (!config.markdownEnabled) {
+        if (!config.markdownEnabled || config.contentIsMarkdown === false) {
             return;
         }
         var textarea = document.getElementById("text");
@@ -1767,6 +1767,10 @@
                 shell.className = "mellow-enhance-editor-shell";
                 shell.hidden = true;
                 shell.style.setProperty("--mellow-editor-primary", config.primaryColor || "#0aa879");
+                var fontMode = ["sans", "content-serif", "serif"].indexOf(config.fontMode) !== -1
+                    ? config.fontMode
+                    : "sans";
+                shell.classList.add("mellow-enhance-font-" + fontMode);
                 if (modeConfig.frontStyle) {
                     shell.classList.add("mellow-enhance-editor--front");
                 }
