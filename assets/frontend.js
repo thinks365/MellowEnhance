@@ -6,14 +6,16 @@
     var mermaidEnabled = Boolean(config.mermaidEnabled);
     var mermaidSourceToggleEnabled = Boolean(config.mermaidSourceToggleEnabled);
     var mermaidFollowMellowTheme = config.mermaidFollowMellowTheme !== false;
+    var turnstileEnabled = Boolean(config.turnstileEnabled);
     var libraryPromises = {};
     var stylesheetPromises = {};
     var mermaidSequence = Promise.resolve();
     var mermaidId = 0;
     var mermaidThemeKey = "";
     var themeRefreshTimer = null;
+    var turnstileThemeRefreshTimer = null;
 
-    if (!latexEnabled && !mermaidEnabled) {
+    if (!latexEnabled && !mermaidEnabled && !turnstileEnabled) {
         return;
     }
 
@@ -702,6 +704,245 @@
         return Boolean(root.querySelector("code.lang-mermaid, code.language-mermaid"));
     }
 
+    function turnstileTheme() {
+        return document.documentElement.classList.contains("is-dark") ? "dark" : "light";
+    }
+
+    function turnstileButton(container) {
+        var form = container.closest("form");
+        return form ? form.querySelector('.comment-submit button[type="submit"]') : null;
+    }
+
+    function setTurnstileButtonEnabled(container, enabled) {
+        var button = turnstileButton(container);
+        if (!button) {
+            return;
+        }
+        button.setAttribute("aria-disabled", enabled ? "false" : "true");
+    }
+
+    function showTurnstileRequiredPrompt(container) {
+        var form = container.closest("form");
+        var message = "请先通过人机认证，再发表评论。";
+        setTurnstileButtonEnabled(container, false);
+        setTurnstileStatus(container, message, true);
+        container.scrollIntoView({behavior: "smooth", block: "center"});
+        document.dispatchEvent(new CustomEvent("mellow:comment-verification-required", {
+            detail: {
+                form: form,
+                message: message
+            }
+        }));
+    }
+
+    function setTurnstileStatus(container, message, visible) {
+        var status = container.querySelector("[data-turnstile-status]");
+        if (!status) {
+            return;
+        }
+        status.textContent = message || "";
+        status.classList.toggle("is-visible", Boolean(visible && message));
+    }
+
+    function removeTurnstileWidget(container) {
+        var state = container.mellowTurnstileState;
+        if (state && state.widgetId !== null && window.turnstile) {
+            try {
+                window.turnstile.remove(state.widgetId);
+            } catch (error) {
+                // 小组件可能已随 PJAX 内容一同移除，无需中断后续导航。
+            }
+        }
+        container.mellowTurnstileState = null;
+        container.removeAttribute("data-turnstile-rendered");
+        var target = container.querySelector("[data-turnstile-widget]");
+        if (target) {
+            target.textContent = "";
+        }
+    }
+
+    function bindTurnstileForm(container) {
+        var form = container.closest("form");
+        if (!form || form.dataset.mellowTurnstileBound === "true") {
+            return;
+        }
+        form.dataset.mellowTurnstileBound = "true";
+        var button = turnstileButton(container);
+        if (button) {
+            button.addEventListener("click", function (event) {
+                var current = form.querySelector("[data-mellow-turnstile]");
+                var state = current && current.mellowTurnstileState;
+                if (!current || (state && state.verified)) {
+                    return;
+                }
+                event.preventDefault();
+                showTurnstileRequiredPrompt(current);
+            });
+        }
+        form.addEventListener("submit", function (event) {
+            var current = form.querySelector("[data-mellow-turnstile]");
+            var state = current && current.mellowTurnstileState;
+            if (!current || !state || !state.verified) {
+                event.preventDefault();
+                if (current) {
+                    showTurnstileRequiredPrompt(current);
+                }
+                return;
+            }
+            state.submitting = true;
+        });
+    }
+
+    function renderTurnstile(container) {
+        if (!window.turnstile || !container.isConnected) {
+            return;
+        }
+        var target = container.querySelector("[data-turnstile-widget]");
+        var sitekey = container.getAttribute("data-sitekey") || "";
+        if (!target || !sitekey) {
+            setTurnstileButtonEnabled(container, false);
+            setTurnstileStatus(container, "人机验证配置不完整，请联系站点管理员。", true);
+            return;
+        }
+
+        removeTurnstileWidget(container);
+        var state = {
+            widgetId: null,
+            verified: false,
+            submitting: false,
+            theme: turnstileTheme()
+        };
+        container.mellowTurnstileState = state;
+        setTurnstileButtonEnabled(container, false);
+        setTurnstileStatus(container, "正在载入人机验证。", false);
+
+        try {
+            state.widgetId = window.turnstile.render(target, {
+                sitekey: sitekey,
+                action: "mellow_comment",
+                theme: state.theme,
+                size: "flexible",
+                appearance: "always",
+                callback: function (token) {
+                    if (container.mellowTurnstileState !== state) {
+                        return;
+                    }
+                    state.verified = Boolean(token);
+                    state.submitting = false;
+                    setTurnstileButtonEnabled(container, state.verified);
+                    setTurnstileStatus(container, state.verified ? "人机验证已通过。" : "请完成人机验证。", false);
+                },
+                "expired-callback": function () {
+                    if (container.mellowTurnstileState !== state) {
+                        return;
+                    }
+                    state.verified = false;
+                    state.submitting = false;
+                    setTurnstileButtonEnabled(container, false);
+                    setTurnstileStatus(container, "人机验证已过期，请重新验证。", true);
+                },
+                "timeout-callback": function () {
+                    if (container.mellowTurnstileState !== state) {
+                        return;
+                    }
+                    state.verified = false;
+                    state.submitting = false;
+                    setTurnstileButtonEnabled(container, false);
+                    setTurnstileStatus(container, "人机验证已超时，请重新验证。", true);
+                },
+                "error-callback": function () {
+                    if (container.mellowTurnstileState !== state) {
+                        return true;
+                    }
+                    state.verified = false;
+                    state.submitting = false;
+                    setTurnstileButtonEnabled(container, false);
+                    setTurnstileStatus(container, "人机验证加载失败，请刷新页面后重试。", true);
+                    return true;
+                }
+            });
+            container.setAttribute("data-turnstile-rendered", "true");
+            bindTurnstileForm(container);
+        } catch (error) {
+            state.verified = false;
+            setTurnstileButtonEnabled(container, false);
+            setTurnstileStatus(container, "人机验证加载失败，请刷新页面后重试。", true);
+        }
+    }
+
+    function refreshTurnstile() {
+        if (!turnstileEnabled) {
+            return;
+        }
+        var containers = Array.prototype.slice.call(document.querySelectorAll("[data-mellow-turnstile]"));
+        if (!containers.length) {
+            return;
+        }
+        containers.forEach(function (container) {
+            setTurnstileButtonEnabled(container, false);
+        });
+        loadLibrary("turnstile", config.turnstileScriptUrl, "turnstile").then(function () {
+            containers.forEach(function (container) {
+                if (!container.mellowTurnstileState) {
+                    renderTurnstile(container);
+                }
+            });
+        }).catch(function () {
+            containers.forEach(function (container) {
+                setTurnstileStatus(container, "人机验证服务未能载入，请刷新页面后重试。", true);
+            });
+        });
+    }
+
+    function refreshTurnstileTheme() {
+        if (!turnstileEnabled || !window.turnstile) {
+            return;
+        }
+        window.clearTimeout(turnstileThemeRefreshTimer);
+        turnstileThemeRefreshTimer = window.setTimeout(function () {
+            var theme = turnstileTheme();
+            document.querySelectorAll("[data-mellow-turnstile]").forEach(function (container) {
+                var state = container.mellowTurnstileState;
+                if (state && state.theme !== theme && !state.submitting) {
+                    renderTurnstile(container);
+                }
+            });
+        }, 160);
+    }
+
+    function handleCommentSubmissionError(event) {
+        var detail = event && event.detail ? event.detail : {};
+        var form = detail.form;
+        if (!form || !form.querySelector) {
+            return;
+        }
+
+        var container = form.querySelector("[data-mellow-turnstile]");
+        var state = container && container.mellowTurnstileState;
+        if (!container || !state) {
+            return;
+        }
+
+        state.submitting = false;
+        var reason = typeof detail.reason === "string" ? detail.reason : "validation";
+        if (reason.indexOf("turnstile-") !== 0 && reason !== "network") {
+            setTurnstileButtonEnabled(container, state.verified);
+            return;
+        }
+
+        state.verified = false;
+        if (window.turnstile && state.widgetId !== null) {
+            try {
+                window.turnstile.reset(state.widgetId);
+            } catch (error) {
+                renderTurnstile(container);
+                return;
+            }
+        }
+        setTurnstileButtonEnabled(container, false);
+        setTurnstileStatus(container, "请重新完成人机验证后再发表评论。", true);
+    }
+
     function refreshContent() {
         var roots = contentRoots();
         if (latexEnabled && roots.some(hasLatex)) {
@@ -748,15 +989,39 @@
     }
 
     refreshContent();
-    document.addEventListener("mellow:navigation", refreshContent);
+    refreshTurnstile();
+    document.addEventListener("mellow:before-replace", function () {
+        document.querySelectorAll("[data-mellow-turnstile]").forEach(removeTurnstileWidget);
+    });
+    document.addEventListener("mellow:navigation", function () {
+        refreshContent();
+        refreshTurnstile();
+    });
+    document.addEventListener("mellow:comment-submission-error", handleCommentSubmissionError);
     window.addEventListener("pageshow", function (event) {
         if (event.persisted) {
             refreshContent();
+            document.querySelectorAll("[data-mellow-turnstile]").forEach(function (container) {
+                if (container.mellowTurnstileState && window.turnstile) {
+                    try {
+                        container.mellowTurnstileState.verified = false;
+                        container.mellowTurnstileState.submitting = false;
+                        setTurnstileButtonEnabled(container, false);
+                        window.turnstile.reset(container.mellowTurnstileState.widgetId);
+                    } catch (error) {
+                        removeTurnstileWidget(container);
+                    }
+                }
+            });
+            refreshTurnstile();
         }
     });
 
-    if (mermaidEnabled && mermaidFollowMellowTheme && "MutationObserver" in window) {
-        new MutationObserver(refreshMermaidTheme).observe(document.documentElement, {
+    if (((mermaidEnabled && mermaidFollowMellowTheme) || turnstileEnabled) && "MutationObserver" in window) {
+        new MutationObserver(function () {
+            refreshMermaidTheme();
+            refreshTurnstileTheme();
+        }).observe(document.documentElement, {
             attributes: true,
             attributeFilter: ["class", "style"]
         });

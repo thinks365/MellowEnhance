@@ -209,7 +209,12 @@
             wysiwygFrontendStyle: 'fa6-solid:paintbrush',
             enableInstantRender: 'fa6-solid:bolt',
             autoOpenInstantRender: 'fa6-solid:arrow-up-right-from-square',
-            instantRenderFrontendStyle: 'fa6-solid:paintbrush'
+            instantRenderFrontendStyle: 'fa6-solid:paintbrush',
+            enableTurnstile: 'fa6-solid:shield-halved',
+            turnstileSiteKey: 'fa6-solid:key',
+            turnstileSecretKey: 'fa6-solid:lock',
+            turnstileRequireComments: 'fa6-solid:comment-dots',
+            turnstileExemptLoggedIn: 'fa6-solid:user-check'
         };
 
         Object.keys(icons).forEach(function (name) {

@@ -5,7 +5,9 @@ namespace TypechoPlugin\MellowEnhance;
 use Typecho\Common;
 use Typecho\Plugin\PluginInterface;
 use Typecho\Widget\Helper\Form;
+use Typecho\Widget\Helper\Form\Element\Password;
 use Typecho\Widget\Helper\Form\Element\Radio;
+use Typecho\Widget\Helper\Form\Element\Text;
 use Widget\Options;
 
 if (!defined('__TYPECHO_ROOT_DIR__')) {
@@ -13,11 +15,11 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 }
 
 /**
- * Mellow 主题配套增强插件，提供下载卡片、Vditor 编辑模式与前端内容渲染。
+ * Mellow 主题配套增强插件，提供下载卡片、Vditor 编辑模式、前端内容渲染与评论安全验证。
  *
  * @package Mellow 增强
  * @author thinks365
- * @version 2.4.8
+ * @version 2.4.19
  * @link https://github.com/thinks365/MellowEnhance
  */
 class Plugin implements PluginInterface
@@ -25,19 +27,38 @@ class Plugin implements PluginInterface
     /** @var bool 防止 Mellow 兼容入口与 Typecho 原生钩子重复输出。 */
     private static $frontendAssetsRendered = false;
 
+    /** @var bool 每次请求只检查一次持久化钩子，避免重复读取与刷新。 */
+    private static $registeredHooksChecked = false;
+
     /**
-     * 注册下载面板、编辑器资源，以及文章页公式和图表的前端资源。
+     * 注册下载面板、编辑器资源、文章内容渲染与评论验证入口。
      */
     public static function activate()
     {
-        \Typecho\Plugin::factory('admin/write-post.php')->content = __CLASS__ . '::renderDownloads';
-        \Typecho\Plugin::factory('admin/write-post.php')->bottom = __CLASS__ . '::renderEditorAssets';
-        \Typecho\Plugin::factory('admin/write-page.php')->bottom = __CLASS__ . '::renderEditorAssets';
-        \Typecho\Plugin::factory('admin/menu.php')->navBar = __CLASS__ . '::renderAdminNav';
-        \Typecho\Plugin::factory('Widget_Archive')->header = __CLASS__ . '::renderFrontendHead';
-        \Typecho\Plugin::factory('Widget_Archive')->footer = __CLASS__ . '::renderFrontendAssets';
+        foreach (self::hookDefinitions() as $definition) {
+            $factory = \Typecho\Plugin::factory($definition['handle']);
+            $component = $definition['component'];
+            $factory->{$component} = $definition['callback'];
+        }
 
-        return _t('Mellow 增强已启用，请进入插件设置选择编辑模式和前端内容渲染功能。');
+        return _t('Mellow 增强已启用，请进入插件设置选择编辑模式、内容渲染和评论安全功能。');
+    }
+
+    /**
+     * 统一维护需要持久化到 Typecho 的插件钩子，供启用与覆盖升级检查复用。
+     */
+    private static function hookDefinitions(): array
+    {
+        return array(
+            array('handle' => 'admin/write-post.php', 'component' => 'content', 'callback' => __CLASS__ . '::renderDownloads'),
+            array('handle' => 'admin/write-post.php', 'component' => 'bottom', 'callback' => __CLASS__ . '::renderEditorAssets'),
+            array('handle' => 'admin/write-page.php', 'component' => 'bottom', 'callback' => __CLASS__ . '::renderEditorAssets'),
+            array('handle' => 'admin/menu.php', 'component' => 'navBar', 'callback' => __CLASS__ . '::renderAdminNav'),
+            array('handle' => 'Widget_Archive', 'component' => 'header', 'callback' => __CLASS__ . '::renderFrontendHead'),
+            array('handle' => 'Widget_Archive', 'component' => 'footer', 'callback' => __CLASS__ . '::renderFrontendAssets'),
+            array('handle' => 'Widget_Feedback', 'component' => 'comment', 'callback' => __CLASS__ . '::validateTurnstileComment'),
+            array('handle' => 'Mellow', 'component' => 'commentVerification', 'callback' => __CLASS__ . '::renderCommentVerification')
+        );
     }
 
     public static function deactivate()
@@ -131,6 +152,55 @@ class Plugin implements PluginInterface
         );
         $form->addInput($instantRenderFrontendStyle);
 
+        $enableTurnstile = new Radio(
+            'enableTurnstile',
+            array('1' => '启用', '0' => '关闭'),
+            '0',
+            _t('Cloudflare Turnstile'),
+            _t('启用 Cloudflare 的人机验证服务。Turnstile 可以独立使用，站点无需接入 Cloudflare CDN。')
+        );
+        $form->addInput($enableTurnstile);
+
+        $turnstileSiteKey = new Text(
+            'turnstileSiteKey',
+            null,
+            '',
+            _t('Turnstile Site Key'),
+            _t('填写 Cloudflare Turnstile 小组件的公开 Site Key，用于在评论表单中加载验证框。')
+        );
+        $turnstileSiteKey->input->setAttribute('autocomplete', 'off');
+        $turnstileSiteKey->input->setAttribute('spellcheck', 'false');
+        $form->addInput($turnstileSiteKey);
+
+        $turnstileSecretKey = new Password(
+            'turnstileSecretKey',
+            null,
+            '',
+            _t('Turnstile Secret Key'),
+            _t('填写与 Site Key 配套的私密 Secret Key。该密钥只会在服务器端用于 Siteverify 验证，不会发送到访客浏览器。')
+        );
+        $turnstileSecretKey->input->setAttribute('autocomplete', 'new-password');
+        $turnstileSecretKey->input->setAttribute('spellcheck', 'false');
+        $form->addInput($turnstileSecretKey);
+
+        $turnstileRequireComments = new Radio(
+            'turnstileRequireComments',
+            array('1' => '需要验证', '0' => '不需要验证'),
+            '0',
+            _t('发表评论需要验证'),
+            _t('启用后，访客必须通过 Turnstile，服务器验证令牌成功后才会写入评论。Site Key 与 Secret Key 均已填写时生效。')
+        );
+        $form->addInput($turnstileRequireComments);
+
+        $turnstileExemptLoggedIn = new Radio(
+            'turnstileExemptLoggedIn',
+            array('1' => '免验证', '0' => '仍需验证'),
+            '0',
+            _t('登录用户免验证'),
+            _t('启用后，已经登录 Typecho 的用户发表评论时不显示验证框，也不执行 Turnstile 校验。匿名访客不受影响。')
+        );
+        $form->addInput($turnstileExemptLoggedIn);
+
         self::renderConfigLayout($form);
     }
 
@@ -148,6 +218,8 @@ class Plugin implements PluginInterface
         if ($isInit) {
             return;
         }
+
+        self::refreshRegisteredHooks();
 
         \Widget\Notice::alloc()->set(_t('Mellow 增强设置已经保存'), 'success');
         $configUrl = Options::alloc()->adminUrl('options-plugin.php?config=MellowEnhance', true);
@@ -202,6 +274,18 @@ class Plugin implements PluginInterface
                 'label' => '编辑器样式',
                 'description' => '分别设置两种 Vditor 模式是否模拟 Mellow 前端文章正文样式。',
                 'fields' => array('wysiwygFrontendStyle', 'instantRenderFrontendStyle')
+            ),
+            'security' => array(
+                'icon' => 'fa6-solid:shield-halved',
+                'label' => '评论安全',
+                'description' => '使用 Cloudflare Turnstile 验证评论提交，并可单独决定登录用户是否免验证。',
+                'fields' => array(
+                    'enableTurnstile',
+                    'turnstileSiteKey',
+                    'turnstileSecretKey',
+                    'turnstileRequireComments',
+                    'turnstileExemptLoggedIn'
+                )
             ),
             'about' => array(
                 'icon' => 'fa6-solid:circle-info',
@@ -295,6 +379,7 @@ class Plugin implements PluginInterface
                     . '<li><a href="https://typecho.org/" target="_blank" rel="noopener noreferrer">Typecho</a><span>——插件所运行的开源博客平台与扩展接口。</span></li>'
                     . '<li><a href="https://github.com/Vanessa219/vditor" target="_blank" rel="noopener noreferrer">Vditor</a><span>——所见即所得、即时渲染与 Markdown 编辑能力。</span></li>'
                     . '<li><a href="https://katex.org/" target="_blank" rel="noopener noreferrer">KaTeX</a> 与 <a href="https://mermaid.js.org/" target="_blank" rel="noopener noreferrer">Mermaid</a><span>——文章公式与图表渲染能力。</span></li>'
+                    . '<li><a href="https://developers.cloudflare.com/turnstile/" target="_blank" rel="noopener noreferrer">Cloudflare Turnstile</a><span>——可选的评论人机验证与 Siteverify 服务。</span></li>'
                     . '<li><a href="https://iconify.design/" target="_blank" rel="noopener noreferrer">Iconify</a><span>——插件设置界面的图标支持。</span></li>'
                     . '</ul>'
                     . '<p class="mellow-config-about__license-note">各第三方项目仍遵循其各自许可证，详情可查看仓库中的 <a href="https://github.com/thinks365/MellowEnhance/blob/main/THIRD-PARTY-NOTICES.md" target="_blank" rel="noopener noreferrer">第三方开源许可说明</a>。</p>'
@@ -324,9 +409,9 @@ class Plugin implements PluginInterface
         $pluginBase = Common::url('MellowEnhance', $options->pluginUrl);
         $assets = new $layoutClass('');
         $assets->html(
-            '<link rel="stylesheet" href="' . self::escape(Common::url('assets/settings.css?v=2.4.8', $pluginBase)) . '">'
+            '<link rel="stylesheet" href="' . self::escape(Common::url('assets/settings.css?v=2.4.12', $pluginBase)) . '">'
             . '<script defer src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>'
-            . '<script defer src="' . self::escape(Common::url('assets/settings.js?v=2.4.8', $pluginBase)) . '"></script>'
+            . '<script defer src="' . self::escape(Common::url('assets/settings.js?v=2.4.12', $pluginBase)) . '"></script>'
         );
         $form->addItem($assets);
     }
@@ -336,6 +421,8 @@ class Plugin implements PluginInterface
      */
     public static function renderAdminNav(): void
     {
+        self::ensureRegisteredHooks();
+
         try {
             if (!\Widget\User::alloc()->pass('administrator', true)) {
                 return;
@@ -374,8 +461,469 @@ class Plugin implements PluginInterface
             'latexEnabled' => '1' === self::setting('enableLatex'),
             'mermaidEnabled' => '1' === self::setting('enableMermaid'),
             'mermaidSourceToggleEnabled' => '1' === self::setting('enableMermaidSourceToggle'),
-            'mermaidFollowMellowTheme' => '1' === self::setting('mermaidFollowMellowTheme', '1')
+            'mermaidFollowMellowTheme' => '1' === self::setting('mermaidFollowMellowTheme', '1'),
+            'turnstileEnabled' => self::turnstileRequiredForCurrentUser()
         );
+    }
+
+    /**
+     * 配置保存时刷新 Typecho 持久化的钩子列表，使覆盖升级无需手动停用并重新启用插件。
+     */
+    private static function refreshRegisteredHooks(): void
+    {
+        $plugins = \Typecho\Plugin::export();
+        if (!isset($plugins['activated']['MellowEnhance'])) {
+            return;
+        }
+
+        \Typecho\Plugin::deactivate('MellowEnhance');
+        self::activate();
+        \Typecho\Plugin::activate('MellowEnhance');
+        \Utils\Helper::setOption('plugins', \Typecho\Plugin::export());
+    }
+
+    /**
+     * 判断当前运行态与数据库中的钩子是否完整，兼容直接覆盖插件文件的升级方式。
+     */
+    private static function registeredHooksAreCurrent(array $plugins): bool
+    {
+        if (
+            !isset($plugins['activated']['MellowEnhance']['handles'])
+            || !is_array($plugins['activated']['MellowEnhance']['handles'])
+            || !isset($plugins['handles'])
+            || !is_array($plugins['handles'])
+        ) {
+            return false;
+        }
+
+        $pluginHandles = $plugins['activated']['MellowEnhance']['handles'];
+        foreach (self::hookDefinitions() as $definition) {
+            $handle = $definition['handle'] . ':' . $definition['component'];
+            $callback = $definition['callback'];
+
+            if (
+                !isset($pluginHandles[$handle])
+                || !is_array($pluginHandles[$handle])
+                || !in_array($callback, $pluginHandles[$handle], true)
+                || !isset($plugins['handles'][$handle])
+                || !is_array($plugins['handles'][$handle])
+                || !in_array($callback, $plugins['handles'][$handle], true)
+            ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 前台或后台首次触发旧钩子时，一次性补齐升级后新增的评论钩子。
+     */
+    private static function ensureRegisteredHooks(): void
+    {
+        if (self::$registeredHooksChecked) {
+            return;
+        }
+        self::$registeredHooksChecked = true;
+
+        $plugins = \Typecho\Plugin::export();
+        if (!isset($plugins['activated']['MellowEnhance']) || self::registeredHooksAreCurrent($plugins)) {
+            return;
+        }
+
+        try {
+            self::refreshRegisteredHooks();
+        } catch (\Throwable $error) {
+            error_log('MellowEnhance failed to refresh plugin hooks: ' . $error->getMessage());
+        }
+    }
+
+    private static function turnstileCommentsConfigured(): bool
+    {
+        return self::mellowThemeActive()
+            && '1' === self::setting('enableTurnstile')
+            && '1' === self::setting('turnstileRequireComments')
+            && '' !== trim(self::setting('turnstileSiteKey', ''))
+            && '' !== trim(self::setting('turnstileSecretKey', ''));
+    }
+
+    private static function mellowThemeActive(): bool
+    {
+        try {
+            return 0 === strcasecmp('Mellow', trim((string) Options::alloc()->theme));
+        } catch (\Throwable $error) {
+            return false;
+        }
+    }
+
+    /**
+     * 读取当前启用的 Mellow 主题设置；切换到其他主题后不沿用这些评论规则。
+     */
+    private static function themeSetting(string $name, string $default = ''): string
+    {
+        if (!self::mellowThemeActive()) {
+            return $default;
+        }
+
+        try {
+            $options = Options::alloc();
+            if (isset($options->{$name})) {
+                return (string) $options->{$name};
+            }
+        } catch (\Throwable $error) {
+            return $default;
+        }
+
+        return $default;
+    }
+
+    /**
+     * 读取评论规则提示文本；空值和不可见控制字符不会覆盖安全的默认提示。
+     */
+    private static function commentRuleMessage(string $name, string $default): string
+    {
+        $message = trim(self::themeSetting($name, $default));
+        if ('' === $message) {
+            return $default;
+        }
+
+        $sanitized = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $message);
+        if (!is_string($sanitized) || '' === trim($sanitized)) {
+            return $default;
+        }
+
+        return trim($sanitized);
+    }
+
+    /**
+     * Cloudflare 公布的测试密钥会返回固定测试字段，只能用于开发与自动化测试。
+     */
+    private static function turnstileUsesOfficialTestKeys(): bool
+    {
+        $siteKeys = array(
+            '1x00000000000000000000AA',
+            '2x00000000000000000000AB',
+            '1x00000000000000000000BB',
+            '2x00000000000000000000BB',
+            '3x00000000000000000000FF'
+        );
+        $secretKeys = array(
+            '1x0000000000000000000000000000000AA',
+            '2x0000000000000000000000000000000AA',
+            '3x0000000000000000000000000000000AA'
+        );
+
+        return in_array(trim(self::setting('turnstileSiteKey', '')), $siteKeys, true)
+            && in_array(trim(self::setting('turnstileSecretKey', '')), $secretKeys, true);
+    }
+
+    private static function currentUserHasLogin(): bool
+    {
+        try {
+            return (bool) \Widget\User::alloc()->hasLogin();
+        } catch (\Throwable $error) {
+            return false;
+        }
+    }
+
+    private static function turnstileRequiredForCurrentUser(): bool
+    {
+        if (!self::turnstileCommentsConfigured()) {
+            return false;
+        }
+
+        return !('1' === self::setting('turnstileExemptLoggedIn') && self::currentUserHasLogin());
+    }
+
+    /**
+     * 将评论文本统一为适合链接与敏感词匹配的形式。
+     */
+    private static function normalizeCommentFilterText(string $value, bool $stripHtml = true): string
+    {
+        $value = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        if (class_exists('Normalizer')) {
+            $normalized = \Normalizer::normalize($value, \Normalizer::FORM_KC);
+            if (is_string($normalized)) {
+                $value = $normalized;
+            }
+        } elseif (function_exists('mb_convert_kana')) {
+            $value = mb_convert_kana($value, 'as', 'UTF-8');
+        }
+
+        $value = strtr($value, array(
+            '．' => '.',
+            '：' => ':',
+            '／' => '/',
+            '＠' => '@'
+        ));
+
+        $withoutInvisibleCharacters = preg_replace(
+            '/[\x{00AD}\x{034F}\x{061C}\x{180E}\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}-\x{206F}\x{FEFF}]/u',
+            '',
+            $value
+        );
+        if (is_string($withoutInvisibleCharacters)) {
+            $value = $withoutInvisibleCharacters;
+        }
+
+        if ($stripHtml) {
+            $value = strip_tags($value);
+        }
+
+        $collapsedWhitespace = preg_replace('/\s+/u', ' ', $value);
+        if (is_string($collapsedWhitespace)) {
+            $value = $collapsedWhitespace;
+        }
+
+        return trim(function_exists('mb_strtolower')
+            ? mb_strtolower($value, 'UTF-8')
+            : strtolower($value));
+    }
+
+    /**
+     * 检查 URL、裸域名、Markdown 链接和 HTML 链接。
+     */
+    private static function commentContainsLink(string $commentText): bool
+    {
+        $commentText = self::normalizeCommentFilterText($commentText, false);
+        if ('' === $commentText) {
+            return false;
+        }
+
+        $domain = '(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+'
+            . '(?:com|net|org|edu|gov|mil|int|info|biz|name|mobi|pro|aero|museum|coop|io|ai|app|dev|tech|cloud|shop|store|blog|link|live|world|work|vip|club|top|site|online|xyz|cc|tv|me|co|[a-z]{2}|xn--[a-z0-9-]{2,59})(?![a-z0-9-])';
+        $patterns = array(
+            '~<\s*a\b[^>]*\bhref\s*=~iu',
+            '~(?:https?|ftp):/{2}[^\s<>"\']+~iu',
+            '~mailto\s*:[^\s<>"\']+~iu',
+            '~(?<![:\p{L}\p{N}@_-])//(?:www\.)?' . $domain . '(?::\d{2,5})?(?:[/?#][^\s<>"\']*)?~iu',
+            '~(?<![\p{L}\p{N}@_-])www\.[^\s<>"\']+~iu',
+            '~\[[^\]\r\n]+\]\(\s*(?:<?(?:https?:)?//|/|#|mailto:|[^\s)]+\.[\p{L}]{2,63})~iu',
+            '~(?<![@\p{L}\p{N}_-])' . $domain . '(?::\d{2,5})?(?:[/?#][^\s<>"\']*)?~iu'
+        );
+
+        foreach ($patterns as $pattern) {
+            if (1 === preg_match($pattern, $commentText)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 敏感词按行配置，规范化后执行不区分英文大小写的字面子串匹配。
+     */
+    private static function commentContainsSensitiveWord(string $commentText, string $configuredWords): bool
+    {
+        $commentText = self::normalizeCommentFilterText($commentText);
+        if ('' === $commentText || '' === trim($configuredWords)) {
+            return false;
+        }
+
+        $words = preg_split('/\R/u', $configuredWords);
+        if (!is_array($words)) {
+            $words = array($configuredWords);
+        }
+
+        $seen = array();
+        foreach ($words as $word) {
+            $word = self::normalizeCommentFilterText((string) $word);
+            if ('' === $word || isset($seen[$word])) {
+                continue;
+            }
+
+            $seen[$word] = true;
+            if (false !== strpos($commentText, $word)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * AJAX 评论返回结构化错误供 Mellow 模态框展示；普通请求继续交给 Typecho 异常页。
+     */
+    private static function rejectComment($message, int $status = 403, string $reason = 'validation'): void
+    {
+        $message = (string) $message;
+        $request = \Typecho\Request::getInstance();
+        if ($request->isAjax() && '1' === (string) $request->getHeader('X-Mellow-Comment', '0')) {
+            $payload = json_encode(array(
+                'success' => false,
+                'message' => $message,
+                'reason' => $reason
+            ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+
+            $response = \Typecho\Response::getInstance();
+            $response->setStatus($status)
+                ->setContentType('application/json')
+                ->setHeader('Cache-Control', 'no-store');
+            echo false === $payload
+                ? '{"success":false,"message":"评论提交失败，请修改后重试。","reason":"validation"}'
+                : $payload;
+            $response->respond();
+        }
+
+        throw new \Typecho\Widget\Exception($message, $status);
+    }
+
+    /**
+     * 在调用外部验证服务前执行 Mellow 本地评论规则。
+     */
+    private static function validateMellowCommentRules($comment)
+    {
+        if (!self::mellowThemeActive()) {
+            return $comment;
+        }
+
+        if ('0' !== trim(self::themeSetting('disableComments', '0'))) {
+            self::rejectComment(_t('评论区已关闭，暂时无法发表评论。'), 403, 'comments-closed');
+        }
+
+        $commentText = is_array($comment) && isset($comment['text'])
+            ? (string) $comment['text']
+            : '';
+
+        if (
+            '0' !== trim(self::themeSetting('disallowCommentLinks', '0'))
+            && self::commentContainsLink($commentText)
+        ) {
+            self::rejectComment(
+                self::commentRuleMessage(
+                    'commentLinkBlockedMessage',
+                    _t('评论中不能包含链接，请移除后重试。')
+                ),
+                403,
+                'link'
+            );
+        }
+
+        if (self::commentContainsSensitiveWord(
+            $commentText,
+            self::themeSetting('commentSensitiveWords', '')
+        )) {
+            self::rejectComment(
+                self::commentRuleMessage(
+                    'commentSensitiveBlockedMessage',
+                    _t('评论包含不允许的内容，请修改后重试。')
+                ),
+                403,
+                'sensitive'
+            );
+        }
+
+        return $comment;
+    }
+
+    /**
+     * 在 Mellow 评论提交按钮左侧输出 Turnstile 占位符。
+     *
+     * @return bool 是否需要在脚本完成验证前禁用提交按钮
+     */
+    public static function renderCommentVerification($archive = null): bool
+    {
+        if (!self::turnstileRequiredForCurrentUser()) {
+            return false;
+        }
+
+        $siteKey = trim(self::setting('turnstileSiteKey', ''));
+        ?>
+        <div class="mellow-turnstile" data-mellow-turnstile data-sitekey="<?php echo self::escape($siteKey); ?>">
+            <div class="mellow-turnstile__widget" data-turnstile-widget></div>
+            <p class="mellow-turnstile__status" data-turnstile-status role="status" aria-live="polite"></p>
+            <noscript><p class="mellow-turnstile__noscript">发表评论前请启用 JavaScript 以完成人机验证。</p></noscript>
+        </div>
+        <?php
+        return true;
+    }
+
+    /**
+     * 在 Typecho 写入评论前执行主题规则，并按需向 Cloudflare Siteverify 验证一次性令牌。
+     */
+    public static function validateTurnstileComment($comment, $content)
+    {
+        $comment = self::validateMellowCommentRules($comment);
+
+        if (!self::turnstileRequiredForCurrentUser()) {
+            return $comment;
+        }
+
+        $request = \Typecho\Request::getInstance();
+        $token = trim((string) $request->get('cf-turnstile-response', ''));
+        if ('' === $token) {
+            self::rejectComment(_t('请先完成人机验证，再发表评论。'), 403, 'turnstile-required');
+        }
+        if (strlen($token) > 2048) {
+            self::rejectComment(_t('人机验证令牌无效，请重新验证。'), 403, 'turnstile-invalid');
+        }
+
+        $client = \Typecho\Http\Client::get();
+        if (!$client) {
+            self::rejectComment(_t('服务器无法连接人机验证服务，请联系站点管理员。'), 503, 'turnstile-unavailable');
+        }
+
+        $payload = array(
+            'secret' => trim(self::setting('turnstileSecretKey', '')),
+            'response' => $token
+        );
+        $remoteIp = $request->getIp();
+        if (false !== filter_var($remoteIp, FILTER_VALIDATE_IP)) {
+            $payload['remoteip'] = $remoteIp;
+        }
+
+        try {
+            $client->setTimeout(8)
+                ->setMultipart(false)
+                ->setHeader('Accept', 'application/json')
+                ->setData($payload)
+                ->send('https://challenges.cloudflare.com/turnstile/v0/siteverify');
+        } catch (\Throwable $error) {
+            self::rejectComment(_t('人机验证服务暂时不可用，请稍后重试。'), 503, 'turnstile-unavailable');
+        }
+
+        if (200 !== $client->getResponseStatus()) {
+            self::rejectComment(_t('人机验证服务暂时不可用，请稍后重试。'), 503, 'turnstile-unavailable');
+        }
+
+        $result = json_decode($client->getResponseBody(), true);
+        if (!is_array($result)) {
+            self::rejectComment(_t('人机验证服务返回异常，请稍后重试。'), 503, 'turnstile-unavailable');
+        }
+
+        $errors = isset($result['error-codes']) && is_array($result['error-codes'])
+            ? $result['error-codes']
+            : array();
+        if (empty($result['success'])) {
+            if (array_intersect(array('missing-input-secret', 'invalid-input-secret'), $errors)) {
+                self::rejectComment(_t('人机验证配置有误，请联系站点管理员。'), 503, 'turnstile-config');
+            }
+            if (in_array('timeout-or-duplicate', $errors, true)) {
+                self::rejectComment(_t('人机验证已过期或已使用，请重新验证。'), 403, 'turnstile-expired');
+            }
+            if (in_array('internal-error', $errors, true)) {
+                self::rejectComment(_t('人机验证服务暂时不可用，请稍后重试。'), 503, 'turnstile-unavailable');
+            }
+
+            self::rejectComment(_t('人机验证失败，请重新验证。'), 403, 'turnstile-failed');
+        }
+
+        if (!self::turnstileUsesOfficialTestKeys()) {
+            if (!isset($result['action']) || 'mellow_comment' !== (string) $result['action']) {
+                self::rejectComment(_t('人机验证用途不匹配，请重新验证。'), 403, 'turnstile-mismatch');
+            }
+
+            $siteHost = parse_url((string) Options::alloc()->siteUrl, PHP_URL_HOST);
+            $verifiedHost = isset($result['hostname']) ? strtolower(rtrim((string) $result['hostname'], '.')) : '';
+            $siteHost = is_string($siteHost) ? strtolower(rtrim($siteHost, '.')) : '';
+            if ('' === $verifiedHost || ('' !== $siteHost && $verifiedHost !== $siteHost)) {
+                self::rejectComment(_t('人机验证站点不匹配，请重新验证。'), 403, 'turnstile-mismatch');
+            }
+        }
+
+        return $comment;
     }
 
     private static function sources(): array
@@ -576,6 +1124,8 @@ class Plugin implements PluginInterface
      */
     public static function renderFrontendHead(): void
     {
+        self::ensureRegisteredHooks();
+
         // 保留旧钩子兼容性；前端样式由 frontend.js 在检测到对应内容后按需加载。
     }
 
@@ -584,12 +1134,14 @@ class Plugin implements PluginInterface
      */
     public static function renderFrontendAssets(): void
     {
+        self::ensureRegisteredHooks();
+
         if (self::$frontendAssetsRendered) {
             return;
         }
 
         $features = self::frontendFeatures();
-        if (!$features['latexEnabled'] && !$features['mermaidEnabled']) {
+        if (!$features['latexEnabled'] && !$features['mermaidEnabled'] && !$features['turnstileEnabled']) {
             return;
         }
 
@@ -599,7 +1151,10 @@ class Plugin implements PluginInterface
         $pluginBase = Common::url('MellowEnhance', $options->pluginUrl);
         $vditorBase = Common::url('vendor/vditor', $pluginBase);
         $config = $features;
-        $config['frontendStyleUrl'] = Common::url('assets/frontend.css?v=2.4.8', $pluginBase);
+        $config['frontendStyleUrl'] = Common::url('assets/frontend.css?v=2.4.12', $pluginBase);
+        if ($features['turnstileEnabled']) {
+            $config['turnstileScriptUrl'] = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+        }
         if ($features['latexEnabled']) {
             $config['katexUrl'] = Common::url('dist/js/katex/katex.min.js', $vditorBase);
             $config['katexStyleUrl'] = Common::url('dist/js/katex/katex.min.css', $vditorBase);
@@ -609,7 +1164,7 @@ class Plugin implements PluginInterface
         }
         ?>
         <script>window.MellowEnhanceFrontendConfig = <?php echo json_encode($config, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;</script>
-        <script defer src="<?php echo self::escape(Common::url('assets/frontend.js?v=2.4.8', $pluginBase)); ?>"></script>
+            <script defer src="<?php echo self::escape(Common::url('assets/frontend.js?v=2.4.19', $pluginBase)); ?>"></script>
         <?php
     }
 
@@ -665,15 +1220,15 @@ class Plugin implements PluginInterface
         <?php if ($editorEnabled): ?>
             <link rel="stylesheet" href="<?php echo self::escape(Common::url('dist/index.css', $vditorBase)); ?>">
         <?php endif; ?>
-            <link rel="stylesheet" href="<?php echo self::escape(Common::url('assets/admin.css?v=2.4.8', $pluginBase)); ?>">
+            <link rel="stylesheet" href="<?php echo self::escape(Common::url('assets/admin.css?v=2.4.12', $pluginBase)); ?>">
         <?php if ($editorEnabled): ?>
-            <link rel="stylesheet" href="<?php echo self::escape(Common::url('assets/mellow-content.css?v=2.4.8', $pluginBase)); ?>">
+            <link rel="stylesheet" href="<?php echo self::escape(Common::url('assets/mellow-content.css?v=2.4.12', $pluginBase)); ?>">
         <?php endif; ?>
         <script>window.MellowEnhanceConfig = <?php echo json_encode($config, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;</script>
         <?php if ($editorEnabled): ?>
             <script src="<?php echo self::escape(Common::url('dist/index.min.js', $vditorBase)); ?>"></script>
         <?php endif; ?>
-            <script src="<?php echo self::escape(Common::url('assets/admin.js?v=2.4.8', $pluginBase)); ?>"></script>
+            <script src="<?php echo self::escape(Common::url('assets/admin.js?v=2.4.12', $pluginBase)); ?>"></script>
         <?php
     }
 }

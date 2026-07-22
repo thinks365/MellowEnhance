@@ -212,6 +212,28 @@
     line-height: 1.6;
 }
 
+.mellow-enhance-config-layout .typecho-option input.text {
+    width: min(100%, 720px);
+    min-height: 40px;
+    padding: 8px 11px;
+    border: 1px solid #d5e0dc;
+    border-radius: 10px;
+    color: var(--mellow-admin-text);
+    background: #fff;
+    box-sizing: border-box;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.mellow-enhance-config-layout .typecho-option input.text:hover {
+    border-color: #9fcfbd;
+}
+
+.mellow-enhance-config-layout .typecho-option input.text:focus {
+    border-color: var(--mellow-admin-primary);
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(10, 168, 121, 0.12);
+}
+
 .mellow-enhance-config-layout .typecho-option > li > span:not(.multiline) {
     position: relative;
     display: inline-flex;
