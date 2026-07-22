@@ -693,20 +693,40 @@ class Plugin implements PluginInterface
 
         $domain = '(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+'
             . '(?:com|net|org|edu|gov|mil|int|info|biz|name|mobi|pro|aero|museum|coop|io|ai|app|dev|tech|cloud|shop|store|blog|link|live|world|work|vip|club|top|site|online|xyz|cc|tv|me|co|[a-z]{2}|xn--[a-z0-9-]{2,59})(?![a-z0-9-])';
-        $patterns = array(
+        $explicitPatterns = array(
             '~<\s*a\b[^>]*\bhref\s*=~iu',
             '~(?:https?|ftp):/{2}[^\s<>"\']+~iu',
             '~mailto\s*:[^\s<>"\']+~iu',
             '~(?<![:\p{L}\p{N}@_-])//(?:www\.)?' . $domain . '(?::\d{2,5})?(?:[/?#][^\s<>"\']*)?~iu',
             '~(?<![\p{L}\p{N}@_-])www\.[^\s<>"\']+~iu',
-            '~\[[^\]\r\n]+\]\(\s*(?:<?(?:https?:)?//|/|#|mailto:|[^\s)]+\.[\p{L}]{2,63})~iu',
-            '~(?<![@\p{L}\p{N}_-])' . $domain . '(?::\d{2,5})?(?:[/?#][^\s<>"\']*)?~iu'
+            '~\[[^\]\r\n]+\]\(\s*(?:<?(?:https?:)?//|/|#|mailto:|[^\s)]+\.[\p{L}]{2,63})~iu'
         );
 
-        foreach ($patterns as $pattern) {
+        foreach ($explicitPatterns as $pattern) {
             if (1 === preg_match($pattern, $commentText)) {
                 return true;
             }
+        }
+
+        $nakedDomainPattern = '~(?<![@\p{L}\p{N}_-])' . $domain
+            . '(?::\d{2,5})?(?:[/?#][^\s<>"\']*)?~iu';
+        if (false === preg_match_all($nakedDomainPattern, $commentText, $matches)) {
+            return false;
+        }
+
+        foreach ($matches[0] as $candidate) {
+            if (1 === preg_match('~[:/?#]~', $candidate)) {
+                return true;
+            }
+
+            if (1 === preg_match(
+                '~^[a-z0-9][a-z0-9._-]*\.(?:md|js|ts|py|rb|go|rs|sh|cs|cc|kt|pl|m|mm)$~i',
+                $candidate
+            )) {
+                continue;
+            }
+
+            return true;
         }
 
         return false;
@@ -1001,6 +1021,7 @@ class Plugin implements PluginInterface
      */
     private static function items(array $fields): array
     {
+        $hasStoredItems = array_key_exists('mellowDownloadItems', $fields);
         $stored = self::field($fields, 'mellowDownloadItems', array());
         if (is_string($stored) && '' !== trim($stored)) {
             $decoded = json_decode($stored, true);
@@ -1023,7 +1044,7 @@ class Plugin implements PluginInterface
             }
         }
 
-        if (!empty($items)) {
+        if ($hasStoredItems) {
             return $items;
         }
 
