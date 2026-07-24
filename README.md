@@ -1,4 +1,6 @@
 # Mellow 增强
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fthinks365%2FMellowEnhance.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fthinks365%2FMellowEnhance?ref=badge_shield)
+
 
 Mellow Enhance Plugin（Mellow 增强插件）是 Mellow Typecho 主题的配套插件，集中提供文章下载卡片、LaTeX 与 Mermaid 前端渲染、评论提交规则与 Cloudflare Turnstile 验证，以及 Markdown 编辑体验增强。
 
@@ -164,3 +166,7 @@ Vditor 使用 MIT License。详细版权、版本和许可证信息见 [THIRD-PA
 ## 协议
 
 Mellow 增强使用 [MIT License](LICENSE)。
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fthinks365%2FMellowEnhance.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fthinks365%2FMellowEnhance?ref=badge_large)
